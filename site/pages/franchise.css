@@ -1,0 +1,460 @@
+/* franchise.css : fichier de page de La Fresque, propriétaire voir site/ART_DIRECTION.md §2. Tout sélecteur commence par .storefront-theme. */
+
+/*
+ * Owner: agent « réseau + franchise ». Page: /franchise (site/components/franchise/FranchisePage.tsx), linked
+ * from the footer only. Contract: site/ART_DIRECTION.md § 14. Primitives of shared.css used, never redefined:
+ * .ky-champ--*, .ky-passe--*, .ky-chiffre, .ky-surtitre, .ky-titre, .ky-lead, .ky-dalle, .ky-btn, .ky-lien, .ky-jet,
+ * .ky-mur, .ky-sous-entete. Motion: the head's green field painted at load (§ 12.1), then each field and pass
+ * painted as it enters (§ 12.4), section titles arriving (§ 12.5). No 3D scene.
+ */
+
+/* ───────────────────────── 0. « À confirmer » (local: shared.css has no marker yet) ───────────────────────── */
+
+.storefront-theme .ky-fr-confirmer {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.12em 0.55em 0.1em;
+  border-radius: var(--ky-r-ctrl);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  color: var(--ky-texte);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.12em;
+}
+
+/* ───────────────────────── 1. The page ───────────────────────── */
+
+.storefront-theme .ky-fr {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.storefront-theme .ky-fr > section {
+  margin-top: clamp(3.5rem, 8vw, 6.5rem);
+}
+
+.storefront-theme .ky-fr-section-tete {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+}
+
+.storefront-theme .ky-fr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.75rem;
+  margin-top: 0.75rem;
+}
+
+/* ───────────────────────── 2. Head: a green field painted at load ───────────────────────── */
+
+.storefront-theme .ky-champ.ky-fr-tete {
+  padding-block: clamp(3rem, 8vw, 6.5rem);
+}
+
+.storefront-theme .ky-fr-tete__grille {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  width: min(1240px, 100%);
+  margin-inline: auto;
+}
+
+/* « GÉNÉRATION » must fit a phone: a little under the xl scale. */
+.storefront-theme .ky-fr-tete__titre {
+  max-width: 14ch;
+  margin: 0;
+  font-size: clamp(2rem, 7.4vw, 6.5rem);
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-tete__lead {
+  max-width: 34ch;
+  color: var(--ky-texte);
+  font-weight: 600;
+}
+
+/* ───────────────────────── 3. The story, in painted years ───────────────────────── */
+
+.storefront-theme .ky-fr-dates {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.storefront-theme .ky-fr-date {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.storefront-theme .ky-fr-date__annee {
+  margin: 0 0 0.35rem -0.3em;
+}
+
+.storefront-theme .ky-fr-date__passe {
+  padding: 0.16em 0.4em 0.08em;
+}
+
+.storefront-theme .ky-fr-date__titre {
+  margin: 0;
+  font-size: 1.3125rem;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-date__texte {
+  max-width: 38ch;
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+@media (min-width: 768px) {
+  .storefront-theme .ky-fr-dates {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ───────────────────────── 4. The brand's arguments: a bento of fields ───────────────────────── */
+
+/* Ochre | sage, then green | ochre (phone stack: ochre, sage, green, ochre): no two touching fields share a paint, stacked or side by side. */
+.storefront-theme .ky-fr-bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.storefront-theme .ky-champ.ky-fr-bloc {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+  margin-inline: 0;
+  padding: clamp(1.75rem, 3.5vw, 3rem) clamp(1.4rem, 3vw, 2.75rem);
+}
+
+.storefront-theme .ky-fr-bloc .ky-titre--m {
+  max-width: 18ch;
+  margin: 0;
+}
+
+.storefront-theme .ky-fr-bloc__texte {
+  max-width: 44ch;
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-bloc__surtitre {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-bloc__source {
+  margin: auto 0 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-chiffre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.storefront-theme .ky-fr-bloc--promesse .ky-chiffre {
+  font-size: clamp(4rem, 9vw, 7.5rem);
+}
+
+.storefront-theme .ky-fr-chiffre__texte {
+  max-width: 18ch;
+  padding-bottom: 0.35rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--ky-texte);
+}
+
+/* On ochre, the ochre trace of `.ky-lien` would vanish: a cream trace instead. */
+.storefront-theme .ky-fr-bloc--villes .ky-lien {
+  --ky-lien-trace: var(--ky-badigeon);
+  margin-top: auto;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme .ky-fr-bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme .ky-fr-bento {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .storefront-theme .ky-fr-bloc--extraction,
+  .storefront-theme .ky-fr-bloc--villes {
+    grid-column: span 7;
+  }
+
+  .storefront-theme .ky-fr-bloc--promesse,
+  .storefront-theme .ky-fr-bloc--reseau {
+    grid-column: span 5;
+  }
+}
+
+/* ───────────────────────── 5. What is still to confirm: cream slabs ───────────────────────── */
+
+.storefront-theme .ky-fr-points {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  margin: 0;
+}
+
+.storefront-theme .ky-fr-point {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  padding: 1.35rem 1.4rem 1.5rem;
+}
+
+.storefront-theme .ky-fr-point dt {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-point dd {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.storefront-theme .ky-fr-point__texte {
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ky-texte-2);
+}
+
+/* ───────────────────────── 6. The application: a demo form on a cream field ───────────────────────── */
+
+.storefront-theme .ky-fr-candidature {
+  scroll-margin-top: calc(var(--ky-entete-h) + 1rem);
+  /* The cream field stays cream in dark mode: native controls (checkbox) keep their light rendering. */
+  color-scheme: light;
+}
+
+.storefront-theme #a-confirmer {
+  scroll-margin-top: calc(var(--ky-entete-h) + 1rem);
+}
+
+.storefront-theme .ky-fr-candidature__grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  width: min(1240px, 100%);
+  margin-inline: auto;
+}
+
+.storefront-theme .ky-fr-candidature__tete {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  align-content: start;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme .ky-fr-candidature__grille {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+}
+
+.storefront-theme .ky-fr-form__grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .storefront-theme .ky-fr-form__grille {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storefront-theme .ky-fr-champ--large {
+    grid-column: 1 / -1;
+  }
+}
+
+.storefront-theme .ky-fr-champ {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.storefront-theme .ky-fr-champ label {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-aide {
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ky-texte-2);
+}
+
+/* The field: a light slab in both modes (the cream field stays cream in dark), bounded by the field ink
+   #8F7C57 (3,9:1 on #FFF9EC, WCAG 1.4.11). */
+.storefront-theme .ky-fr-champ :is(input:not([type="checkbox"]), textarea) {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.7rem 0.9rem;
+  border: 2px solid var(--ky-champ);
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-dalle-claire);
+  color: var(--ky-charbon);
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.storefront-theme .ky-fr-champ textarea {
+  resize: vertical;
+}
+
+.storefront-theme .ky-fr-champ :is(input, textarea):focus-visible {
+  outline: 3px solid var(--ky-focus);
+  outline-offset: 2px;
+}
+
+.storefront-theme .ky-fr-champ[data-invalide] :is(input:not([type="checkbox"]), textarea) {
+  border-color: var(--ky-mot);
+}
+
+.storefront-theme .ky-fr-erreur {
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--ky-mot);
+}
+
+.storefront-theme .ky-fr-accord {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0.75rem;
+}
+
+.storefront-theme .ky-fr-accord input[type="checkbox"] {
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: 0.05rem 0 0;
+  accent-color: var(--ky-brique);
+}
+
+.storefront-theme .ky-fr-accord label {
+  font-weight: 600;
+}
+
+.storefront-theme .ky-fr-accord .ky-fr-erreur {
+  grid-column: 2;
+}
+
+.storefront-theme .ky-fr-resume {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--ky-r-ctrl);
+  background: color-mix(in srgb, var(--ky-mot) 10%, transparent);
+  font-family: var(--ky-font-texte);
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-resume__titre {
+  margin: 0 0 0.4rem;
+  font-weight: 800;
+}
+
+.storefront-theme .ky-fr-resume ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.storefront-theme .ky-fr-resume a {
+  color: var(--ky-texte);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.storefront-theme .ky-fr-envoyer {
+  margin-top: 1.75rem;
+}
+
+.storefront-theme .ky-fr-merci {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+  align-content: start;
+  font-family: var(--ky-font-texte);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-merci p {
+  max-width: 46ch;
+  margin: 0;
+}
+
+.storefront-theme .ky-fr-merci__titre {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-fr-merci__retour {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}

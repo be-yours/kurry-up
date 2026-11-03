@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:53:13.427Z",
+  "modality": "image",
+  "prompt": "Keep the exact subject, arrangement, camera angle, framing and food of the reference image (butter chicken in the deep green bowl, basmati rice, folded blistered naan, brushed-steel tray, cinnamon, cardamom and cloves). Change ONLY the background: it becomes a perfectly flat, seamless, uniform, matte sage green (#9FB388) with no gradient, no vignette, no texture, no cast shadow and no reflection of the table. Make sure the white rice mound is clearly visible against it. Keep the same soft warm daylight on the food. Absolutely no text, no letters, no logo, no hands, no people.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "Keep the exact subject, arrangement, camera angle, framing and food of the reference image (butter chicken in the deep green bowl, basmati rice, folded blistered naan, brushed-steel tray, cinnamon, cardamom and cloves). Change ONLY the background: it becomes a perfectly flat, seamless, uniform, matte sage green (#9FB388) with no gradient, no vignette, no texture, no cast shadow and no reflection of the table. Make sure the white rice mound is clearly visible against it. Keep the same soft warm daylight on the food. Absolutely no text, no letters, no logo, no hands, no people.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "1536x1024",
+    "count": 1,
+    "referenceImages": 1
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/hero/20261103-105313-image-keep-the-exact-subject-arrangement-camer.png",
+      "mediaType": "image/png",
+      "bytes": 1831171
+    }
+  ]
+}

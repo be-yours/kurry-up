@@ -1,0 +1,48 @@
+/* Display screen — optimized for TV / full-screen kiosk */
+
+.display-root {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Flash animation for newly-ready tickets */
+@keyframes flash-ready {
+  0%, 100% { background-color: rgba(34, 197, 94, 0.15); }
+  50% { background-color: rgba(34, 197, 94, 0.4); }
+}
+
+.ticket-flash {
+  animation: flash-ready 0.5s ease-in-out 3;
+}
+
+/* Live indicator pulse */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.live-dot {
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+/* Column cards */
+.display-ticket {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.display-ticket-preparing {
+  border-left: 4px solid #f59e0b;
+}
+
+.display-ticket-ready {
+  border-left: 4px solid #22c55e;
+}

@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Env — never commit real values
+.env
+.env.local
+.env.*.local
+.env.convex
+
+# Tests
+coverage/
+test-results/
+playwright-report/
+blob-report/
+e2e/.auth/
+
+# Convex
+.convex-build/
+
+# Vercel
+.vercel/
+
+# Tooling
+.codegraph/
+.context/
+.DS_Store
+*.log
+
+# Mode engine-link (pnpm engine:link) — jamais commité
+.engine-link.json
+.gstack/
+
+# Infisical — `infisical init` writes the project id here; the scripts read
+# INFISICAL_PROJECT_ID instead. Never commit it.
+.infisical.json
+
+# Layout family harness (#507) — an instrument, regenerated on demand
+.layout-harness/
+.vercel
+.env*
+
+# Kurry Up : local backend data, raw brand video, scratch captures
+.convex/
+site/source/video/
+head-1440.png
+.vercel/

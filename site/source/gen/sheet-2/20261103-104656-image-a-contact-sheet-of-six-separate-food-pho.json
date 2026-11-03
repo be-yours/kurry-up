@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:46:56.961Z",
+  "modality": "image",
+  "prompt": "A contact sheet of six separate food photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) ceramic, brushed steel, plain kraft-free unprinted materials. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) a complete Indian meal set: a green bowl of orange chicken curry with basmati rice, a folded blistered naan, two samosas and a tall glass of mango lassi, all together on a round brushed-steel tray; (2) a Kurry Up bowl: a wide green bowl composed of grilled tandoori chicken pieces, basmati rice, roasted green beans, bell pepper strips, caramelised onions, a spoon of white raita sauce, peanuts and fresh mint and coriander, neatly arranged in sections; (3) a biryani poulet: a mound of golden-saffron and white spiced basmati rice with marinated chicken pieces, fried onions, mint and coriander, in a green bowl; (4) two samosas: golden crisp triangular pastries, one cut open showing spiced potato and peas, with a small green chutney in a tiny steel bowl; (5) a naan fromage: a round blistered naan oozing melted cheese, cut in a few wedges, on a steel plate; (6) a lassi: a tall clear glass of thick creamy pale lassi with a few pistachio and rose-petal flecks on top, a small straw. Absolutely no text, no letters, no logos, no printed packaging, no hands, no people. Original images, not copies of any brand's photos.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "A contact sheet of six separate food photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) ceramic, brushed steel, plain kraft-free unprinted materials. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) a complete Indian meal set: a green bowl of orange chicken curry with basmati rice, a folded blistered naan, two samosas and a tall glass of mango lassi, all together on a round brushed-steel tray; (2) a Kurry Up bowl: a wide green bowl composed of grilled tandoori chicken pieces, basmati rice, roasted green beans, bell pepper strips, caramelised onions, a spoon of white raita sauce, peanuts and fresh mint and coriander, neatly arranged in sections; (3) a biryani poulet: a mound of golden-saffron and white spiced basmati rice with marinated chicken pieces, fried onions, mint and coriander, in a green bowl; (4) two samosas: golden crisp triangular pastries, one cut open showing spiced potato and peas, with a small green chutney in a tiny steel bowl; (5) a naan fromage: a round blistered naan oozing melted cheese, cut in a few wedges, on a steel plate; (6) a lassi: a tall clear glass of thick creamy pale lassi with a few pistachio and rose-petal flecks on top, a small straw. Absolutely no text, no letters, no logos, no printed packaging, no hands, no people. Original images, not copies of any brand's photos.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2304x1536",
+    "count": 1,
+    "referenceImages": 1
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/sheet-2/20261103-104656-image-a-contact-sheet-of-six-separate-food-pho.png",
+      "mediaType": "image/png",
+      "bytes": 4706031
+    }
+  ]
+}

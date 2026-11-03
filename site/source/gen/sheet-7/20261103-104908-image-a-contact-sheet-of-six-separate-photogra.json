@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:49:08.402Z",
+  "modality": "image",
+  "prompt": "A contact sheet of six separate photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) and off-white ceramic, brushed steel, clear glass. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) mousse au chocolat: a glass cup of dark chocolate mousse with a small curl of chocolate on top and a spoon beside; (2) mangue et menthe: a green bowl of ripe diced mango with finely chopped fresh mint; (3) thé indien: a small glass cup of milky spiced chai tea on a saucer with a cinnamon stick and two cardamom pods beside; (4) eau de coco: a whole green young coconut with a hole cut in the top and a paper straw (plain, no print); (5) kombucha: a tall glass of light amber sparkling kombucha with ice and a slice of ginger and a mint leaf; (6) jus indien: a short glass of bright yellow-orange mango juice with a mint leaf, next to half a mango. Absolutely no text, no letters, no logos, no printed packaging, no labels, no hands, no people. Original images, not copies of any brand's photos.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "A contact sheet of six separate photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) and off-white ceramic, brushed steel, clear glass. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) mousse au chocolat: a glass cup of dark chocolate mousse with a small curl of chocolate on top and a spoon beside; (2) mangue et menthe: a green bowl of ripe diced mango with finely chopped fresh mint; (3) thé indien: a small glass cup of milky spiced chai tea on a saucer with a cinnamon stick and two cardamom pods beside; (4) eau de coco: a whole green young coconut with a hole cut in the top and a paper straw (plain, no print); (5) kombucha: a tall glass of light amber sparkling kombucha with ice and a slice of ginger and a mint leaf; (6) jus indien: a short glass of bright yellow-orange mango juice with a mint leaf, next to half a mango. Absolutely no text, no letters, no logos, no printed packaging, no labels, no hands, no people. Original images, not copies of any brand's photos.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2304x1536",
+    "count": 1,
+    "referenceImages": 1
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/sheet-7/20261103-104908-image-a-contact-sheet-of-six-separate-photogra.png",
+      "mediaType": "image/png",
+      "bytes": 3631646
+    }
+  ]
+}

@@ -1,0 +1,820 @@
+/*
+ * shared.css — CLIENT ZONE. Kurry Up, « La Fresque ». Owner: the art director (site/ART_DIRECTION.md).
+ *
+ * The primitives of the paint, which every page stands on: the ground and its lime-wash grain, the type,
+ * the fields of colour, « la passe » (the brush stroke), the painted number, the slabs, the buttons, the
+ * image caps, focus, and the motion grammar (keyframes, the scroll reveals). Page files USE these
+ * names; they do not redefine them. A page that needs a new shared piece asks for it here.
+ *
+ * Rules:
+ *   - every selector starts at `.storefront-theme`, or `body:has(.storefront-theme)` for the Radix
+ *     portals rendered outside the shell (cart sheet, dish sheet, menus). The admin is never reached.
+ *   - the DEFAULT style of anything that moves is its final, still state. Motion is only added inside
+ *     `@media (prefers-reduced-motion: no-preference)`, and scroll-driven motion inside
+ *     `@supports (animation-timeline: view())`. An old Safari, a reduced-motion visitor and a page with
+ *     no script all see the walls already painted.
+ *   - `animation` (shorthand) resets `animation-timeline`: the timeline and the range are always
+ *     declared AFTER it, in the same rule.
+ *   - a brush mark is always INSIDE the box of its field, with a margin: no painted edge is ever cut
+ *     flush by its container (no `overflow: hidden` on the parent of a `.ky-passe` or a `.ky-champ`).
+ */
+
+/* ───────────────────────────── 0. The brushes (masks) ───────────────────────────── */
+
+/* Three SVG masks, stretched to any box (`preserveAspectRatio="none"`), alpha only.
+   --ky-brosse        one wide horizontal stroke: ragged attack on the left, bristle fingers and three
+                      bristle hairs on the right, gently wavy top and bottom. Titles, groups, chips.
+                      Nonzero fill on purpose: the hairs only ADD paint past the ragged edge. They used to
+                      be cut as evenodd holes, and the ground showing through them read as a stroke across
+                      the first and last letters (« FRESH », « NOS », « RESTAURANTS »). Never punch a hole
+                      in this mask: text sits on every part of it except the padding.
+   --ky-brosse-champ  the same gesture, calmer edges, for a whole section (a field).
+   --ky-brosse-courte a short dab for buttons and the eyebrow mark (ragged ends, no streaks). */
+.storefront-theme,
+body:has(.storefront-theme) {
+  --ky-brosse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 100' preserveAspectRatio='none'%3E%3Cpath d='M22 8C200 2 420 11 620 5S900 10 958 6L968 13L990 11L976 21L1000 26L982 34L996 42L978 50L998 58L980 66L994 76L970 82L984 91L955 95C760 99 520 91 320 97S80 92 26 95L14 88L4 84L16 76L2 66L12 58L0 48L14 40L3 30L18 22L6 14ZM868 29L992 26L992 29.5L868 31.5ZM890 55L998 54L998 57L890 57.5ZM850 73L988 72L988 74.5L850 75Z'/%3E%3C/svg%3E");
+  --ky-brosse-champ: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M14 18C240 6 520 22 760 10S960 16 986 12L993 90L984 170L996 260L987 360L999 470L988 580L997 690L985 800L995 900L982 988C760 996 520 980 280 992S60 984 16 990L6 900L15 800L3 690L13 580L1 470L12 360L2 260L14 170L4 90Z'/%3E%3C/svg%3E");
+  --ky-brosse-courte: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M10 5C60 2 120 7 188 4L194 14L186 22L198 31L188 40L196 50L184 56C130 59 70 54 12 57L4 48L12 40L1 30L10 21L3 12Z'/%3E%3C/svg%3E");
+
+  /* The lime-wash grain: fractal noise at about 3 % (light) / 2,5 % (dark). Ground only. */
+  --ky-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .24 0 0 0 0 .1 0 0 0 .075 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.dark .storefront-theme,
+.dark body:has(.storefront-theme) {
+  --ky-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .99 0 0 0 0 .95 0 0 0 0 .85 0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ───────────────────────────── 1. The wall (ground) ───────────────────────────── */
+
+/* The shell and the engine's page wrappers (`main > div.min-h-screen`) both paint `bg-background`; the
+   grain goes on both so it never stops at a wrapper's edge. In dark mode the engine paints its wrappers
+   `dark:bg-muted`: the wall stays the wall. */
+.storefront-theme,
+.storefront-theme main > div.min-h-screen {
+  background-color: hsl(var(--background));
+  background-image: var(--ky-grain);
+  background-size: 240px 240px;
+}
+
+/* The engine's wrappers are `overflow-x-hidden`, which kills every `position: sticky` below them (the
+   family tabs of the carte first). `clip` cuts the same horizontal overflow and keeps sticky alive. */
+.storefront-theme main > div.min-h-screen {
+  overflow-x: clip;
+}
+
+/* No jump of the footer while a page streams (CLS, all inner pages). The server sends the header and
+   the footer around a `main` that holds only a `<template>` (pending Suspense boundary: /menu, /about,
+   /blog, /contact...) or the engine's product skeleton (`div.container > div.grid > .animate-pulse`,
+   583 px at 375) or nothing at all (/checkout renders `null` until the basket is read from storage,
+   CLS 0,75 to 0,89): the footer sat in the first screen, then the real page pushed it off (fiche produit
+   0,98, carte 0,56 under Fast 4G + CPU x4). Holding `main` one screen tall while it waits keeps the
+   footer below the fold from the first byte; the rule lets go as soon as the content lands. The home's
+   own reserves (home.css §0.1) are the same height and stay untouched. */
+.storefront-theme main:has(> template),
+.storefront-theme main:not(:has(*)),
+.storefront-theme main:has(> div.container > div.grid > .animate-pulse) {
+  min-height: 100lvh;
+}
+
+.storefront-theme ::selection {
+  background: var(--ky-orange);
+  color: var(--ky-encre);
+}
+
+/* ───────────────────────────── 2. Type ───────────────────────────── */
+
+/* Bungee has one weight and no italic. The engine writes `font-black`, `italic` and `tracking-tighter`
+   on its titles: without this a browser smears a fake bold and a fake slant. Bungee is for 28 px and
+   more: h1 and h2 only. h3 to h6 (card names, footer columns, form sections) are Mukta 800. */
+.storefront-theme :is(h1, h2),
+body:has(.storefront-theme) [role="dialog"] :is(h1, h2) {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  letter-spacing: 0.005em;
+  line-height: 0.95;
+}
+
+.storefront-theme :is(h3, h4, h5, h6),
+body:has(.storefront-theme) [role="dialog"] :is(h3, h4, h5, h6) {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.storefront-theme :is(h1, h2) :is(.italic, em) {
+  font-style: normal;
+}
+
+.storefront-theme .ky-titre {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-style: normal;
+  text-transform: uppercase;
+  /* 1.08, not 0.95: Bungee's capital accents (É, À) top out at 0.98 em above the baseline (capitals at
+     0.72 em) and touched the row above (« RÉUNION » under « PARIS », « RÉSEAU », « À UN »). 1.08 leaves a
+     0.1 em gap. The xl titles keep their 1 (checked in tour 2). */
+  line-height: 1.08;
+  letter-spacing: 0.005em;
+  font-synthesis: none;
+  text-wrap: balance;
+}
+
+.storefront-theme .ky-titre--xl {
+  font-size: clamp(2.75rem, 8.2vw, 7.5rem);
+  line-height: 1;
+}
+
+.storefront-theme .ky-titre--l {
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+}
+
+.storefront-theme .ky-titre--m {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+}
+
+/* Eyebrow: a short ochre brush dab, then Mukta 800 capitals. Not a dot, not a bead. */
+.storefront-theme .ky-surtitre {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme .ky-surtitre::before {
+  content: "";
+  flex: none;
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-surtitre-trace, var(--ky-ocre));
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme .ky-lead {
+  max-width: 40ch;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+/* Dish name and price (cards, bento, carte). */
+.storefront-theme .ky-nom {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-prix {
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ky-texte);
+}
+
+/* A brand word inside running text or a title. Never on a field of the same colour. */
+.storefront-theme .ky-mot {
+  color: var(--ky-mot);
+}
+
+/* Screen readers only. Never hides a visible title. */
+.storefront-theme .ky-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ───────────────────────────── 3. Layout helpers ───────────────────────────── */
+
+.storefront-theme .ky-mur {
+  width: var(--ky-wrap);
+  margin-inline: auto;
+}
+
+/* Clears the fixed header (68 px, 84 px from 1280 px). */
+.storefront-theme .ky-sous-entete {
+  padding-top: calc(var(--ky-entete-h) + clamp(1.5rem, 4vw, 3rem));
+}
+
+/* ───────────────────────────── 4. Fields of colour (les aplats) ───────────────────────────── */
+
+/* A field is a section-sized coat of paint laid on the wall. Its paint is a `::before` masked by the
+   field brush, always inset from the screen edge by `--ky-marge-passe` (the brushed edge stays whole).
+   Each colour re-declares, for its subtree, the role tokens AND the engine text tokens, so whatever is
+   placed inside reads, in light and in dark.
+
+   Usage: <section class="ky-champ ky-champ--vert"> … </section>
+   Rules: orange, green, ochre and sage share the page in whole fields, never a gradient between two.
+          At most ONE orange field or orange pass per screen. */
+.storefront-theme .ky-champ {
+  position: relative;
+  isolation: isolate;
+  margin-inline: var(--ky-marge-passe);
+  padding: clamp(2.5rem, 6vw, 5.5rem) clamp(1.25rem, 5vw, 4.5rem);
+  color: var(--ky-texte);
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme .ky-champ::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-champ-fond, var(--ky-sol-charge));
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme .ky-champ--orange {
+  --ky-champ-fond: var(--ky-orange);
+  --ky-texte: var(--ky-encre);
+  --ky-texte-2: var(--ky-encre);
+  --ky-mot: var(--ky-encre);
+  --ky-focus: var(--ky-encre);
+  --ky-surtitre-trace: var(--ky-encre);
+  --ky-chiffre-couleur: var(--ky-encre);
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 23 26.5% 9.6%;
+  --primary-ink: 23 26.5% 9.6%;
+  --ky-btn-fond: var(--ky-encre);
+  --ky-btn-texte: var(--ky-badigeon);
+  --ky-btn-survol: #3a2a1c;
+}
+
+.storefront-theme .ky-champ--vert {
+  --ky-champ-fond: var(--ky-vert-champ);
+  --ky-texte: var(--ky-badigeon);
+  --ky-texte-2: var(--ky-creme-ombre);
+  --ky-mot: var(--ky-orange-clair);
+  --ky-focus: var(--ky-orange-clair);
+  --ky-chiffre-couleur: var(--ky-ocre);
+  --foreground: 43 89.7% 92.4%;
+  --muted-foreground: 45 27.3% 74.1%;
+  --primary-ink: 23 100% 68%;
+}
+
+.storefront-theme .ky-champ--ocre {
+  --ky-champ-fond: var(--ky-ocre);
+  --ky-texte: var(--ky-encre);
+  --ky-texte-2: var(--ky-encre-2);
+  --ky-mot: var(--ky-encre);
+  --ky-focus: var(--ky-encre);
+  --ky-surtitre-trace: var(--ky-encre);
+  --ky-chiffre-couleur: var(--ky-encre);
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 28 34.9% 16.9%;
+  --primary-ink: 23 26.5% 9.6%;
+  --ky-btn-fond: var(--ky-encre);
+  --ky-btn-texte: var(--ky-badigeon);
+  --ky-btn-survol: #3a2a1c;
+}
+
+.storefront-theme .ky-champ--sauge {
+  --ky-champ-fond: var(--ky-sauge);
+  --ky-texte: var(--ky-encre);
+  --ky-texte-2: #2b2a1f;
+  --ky-mot: var(--ky-encre);
+  --ky-focus: var(--ky-encre);
+  --ky-surtitre-trace: var(--ky-vert);
+  --ky-chiffre-couleur: var(--ky-vert);
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 55 16.2% 14.5%;
+  --primary-ink: 23 26.5% 9.6%;
+  --ky-btn-fond: var(--ky-encre);
+  --ky-btn-texte: var(--ky-badigeon);
+  --ky-btn-survol: #3a2a1c;
+}
+
+/* Cream field: the same in both modes (in dark it is a cream coat laid on the green wall). */
+.storefront-theme .ky-champ--creme {
+  --ky-champ-fond: var(--ky-chaux);
+  --ky-texte: var(--ky-charbon);
+  --ky-texte-2: var(--ky-gris);
+  --ky-mot: var(--ky-brique);
+  --ky-focus: #c24a00;
+  --ky-chiffre-couleur: var(--ky-orange);
+  --foreground: 0 0% 21.6%;
+  --muted-foreground: 32 8.6% 34.3%;
+  --primary-ink: 23 100% 33.1%;
+}
+
+/* Charcoal field: the naans' swatch, rare, never a page ground. */
+.storefront-theme .ky-champ--charbon {
+  --ky-champ-fond: var(--ky-charbon);
+  --ky-texte: var(--ky-badigeon);
+  --ky-texte-2: var(--ky-creme-ombre);
+  --ky-mot: var(--ky-orange-clair);
+  --ky-focus: var(--ky-orange-clair);
+  --ky-chiffre-couleur: var(--ky-ocre);
+  --foreground: 43 89.7% 92.4%;
+  --muted-foreground: 45 27.3% 74.1%;
+  --primary-ink: 23 100% 68%;
+}
+
+/* ───────────────────────────── 5. La passe (the brush stroke) ───────────────────────────── */
+
+/* One wide horizontal stroke painted behind a title, a word group or a chip. Block or inline-block,
+   one line or one block (never across line breaks of running text). Padding keeps the bristles off the
+   letters. Text colour is set for the stroke's colour.
+
+   Usage: <h2 class="ky-titre ky-titre--l"><span class="ky-passe ky-passe--orange">La carte</span></h2>
+   Large Bungee title (28 px and more) on orange may be cream: add `ky-passe--lettre-creme` (3,22:1,
+   large text only). */
+.storefront-theme .ky-passe {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  padding: 0.18em 0.55em 0.12em;
+  color: var(--ky-passe-texte, var(--ky-encre));
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme .ky-passe::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-passe-fond, var(--ky-orange));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme .ky-passe--bloc {
+  display: block;
+  padding: clamp(1rem, 2.4vw, 1.75rem) clamp(1.25rem, 3.5vw, 3rem);
+}
+
+.storefront-theme .ky-passe--orange {
+  --ky-passe-fond: var(--ky-orange);
+  --ky-passe-texte: var(--ky-encre);
+}
+
+.storefront-theme .ky-passe--vert {
+  --ky-passe-fond: var(--ky-vert-champ);
+  --ky-passe-texte: var(--ky-badigeon);
+}
+
+.storefront-theme .ky-passe--ocre {
+  --ky-passe-fond: var(--ky-ocre);
+  --ky-passe-texte: var(--ky-encre);
+}
+
+.storefront-theme .ky-passe--sauge {
+  --ky-passe-fond: var(--ky-sauge);
+  --ky-passe-texte: var(--ky-encre);
+}
+
+.storefront-theme .ky-passe--charbon {
+  --ky-passe-fond: var(--ky-charbon);
+  --ky-passe-texte: var(--ky-badigeon);
+}
+
+.storefront-theme .ky-passe--creme {
+  --ky-passe-fond: var(--ky-chaux);
+  --ky-passe-texte: var(--ky-charbon);
+}
+
+/* Large text only (Bungee ≥ 28 px): cream letters on the orange stroke, 3,22:1. */
+.storefront-theme .ky-passe--orange.ky-passe--lettre-creme {
+  --ky-passe-texte: var(--ky-badigeon);
+}
+
+/* Right to left (the green pass of the hero comes from the right). */
+.storefront-theme .ky-passe--droite::before {
+  transform: scaleX(-1);
+}
+
+/* The mini-pass: a short stroke under a word (active header room, active link). 0,32 em high. */
+.storefront-theme .ky-trace {
+  position: relative;
+  isolation: isolate;
+}
+
+.storefront-theme .ky-trace::after {
+  content: "";
+  position: absolute;
+  left: -0.15em;
+  right: -0.15em;
+  bottom: -0.28em;
+  height: 0.32em;
+  z-index: -1;
+  background: var(--ky-trace-fond, var(--ky-orange));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* ───────────────────────────── 6. The painted number (le chiffre peint) ───────────────────────────── */
+
+/* Numbers that matter to the brand (10 min, 1 h, 6 familles, 8e, 17e), painted very large like an
+   address on a wall. Never a dial, never a counter display. Large text only, so orange on the wall
+   (3,22:1) is allowed here and nowhere else as text.
+   Usage: <p class="ky-chiffre">10<span class="ky-chiffre__unite">min</span></p> */
+.storefront-theme .ky-chiffre {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(4.25rem, 13vw, 10.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-chiffre-couleur, var(--ky-orange));
+}
+
+.storefront-theme .ky-chiffre--m {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+}
+
+.storefront-theme .ky-chiffre__unite {
+  margin-left: 0.08em;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.3em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 0.2em;
+  color: var(--ky-texte);
+}
+
+/* ───────────────────────────── 7. Slabs (les dalles) ───────────────────────────── */
+
+/* A reading slab: cream, soft corners, soft warm shadow, NO border, no frame. Laid on the wall or on a
+   field. The next coat on hover (`--survol`): ochre-pale in light, a lighter green in dark. */
+.storefront-theme .ky-dalle {
+  background: var(--ky-dalle);
+  color: var(--ky-texte);
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme .ky-dalle--survol {
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme .ky-dalle--survol:is(:hover, :focus-within) {
+  background-color: var(--ky-couche, var(--ky-peche));
+}
+
+.dark .storefront-theme .ky-dalle--survol {
+  --ky-couche: var(--ky-vert);
+}
+
+/* The cream label laid on a photo (bento): matt, no frame, no dark veil on the photo. */
+.storefront-theme .ky-etiquette {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  background: var(--ky-dalle-claire);
+  color: var(--ky-charbon);
+  border-radius: var(--ky-r-ctrl);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme .ky-etiquette .ky-nom,
+.storefront-theme .ky-etiquette .ky-prix {
+  color: var(--ky-charbon);
+}
+
+/* ───────────────────────────── 8. Buttons ───────────────────────────── */
+
+/* « Commander »: the brand orange, intact, with a DARK INK label (5,01:1). White on #EA5800 is 3,56:1
+   and is forbidden. The fill is a short brush dab (`::before`), so the corners are « rognés à la
+   brosse », not rounded. On an orange, ochre or sage field the fill turns ink with a cream label.
+   Usage: <a class="ky-btn" href="/menu">Commander</a> */
+.storefront-theme .ky-btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.75rem 1.75rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ky-btn-texte, var(--ky-encre));
+  background: none;
+  border: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.storefront-theme .ky-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-btn-fond, var(--ky-orange));
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme .ky-btn:hover::before {
+  background: var(--ky-btn-survol, var(--ky-orange-vif));
+}
+
+/* The secondary action (« Voir la carte »): a word with an ochre trace under it that thickens on hover.
+   Not an outlined box. */
+.storefront-theme .ky-lien {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  white-space: nowrap;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-lien::after {
+  content: "";
+  position: absolute;
+  left: -0.2em;
+  right: -0.2em;
+  bottom: 0.45rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-lien-trace, var(--ky-ocre));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: height var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme .ky-lien:hover::after {
+  height: 0.75em;
+}
+
+/* The engine's filled buttons keep their fill (`bg-primary`, orange) and label (`text-primary-
+   foreground`, ink): they only take the site's type. */
+.storefront-theme [data-slot="button"],
+body:has(.storefront-theme) [role="dialog"] [data-slot="button"] {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+/* ───────────────────────────── 9. Focus ───────────────────────────── */
+
+.storefront-theme :focus-visible {
+  outline: 3px solid var(--ky-focus);
+  outline-offset: 3px;
+}
+
+/* ───────────────────────────── 10. Image caps ───────────────────────────── */
+
+/* No picture ever fills a phone or a tablet screen. A `fill` image from Next lives in a box whose
+   HEIGHT is capped here, never the <img> itself. The box keeps soft corners INSIDE its slab or field
+   (margin of at least 12 px): no edge cut flush with its container.
+     .ky-cap          scene and page photos   min(40svh,360px) phone · min(52svh,520px) tablet · min(70svh,640px)
+     .ky-cap--hero    the hero dish            min(42svh,300px) · min(48svh,440px) · min(64svh,600px)
+     .ky-cap--plat    card and bento photos    min(30svh,240px) · min(32svh,280px) · 300px
+     .ky-cap--detoure detoured dish: `contain`, no corners, no ground of its own */
+.storefront-theme .ky-cap {
+  position: relative;
+  width: 100%;
+  height: var(--ky-cap-scene);
+  max-height: var(--ky-cap-scene);
+  border-radius: var(--ky-r-photo);
+  overflow: clip;
+}
+
+.storefront-theme .ky-cap--hero {
+  height: var(--ky-cap-hero);
+  max-height: var(--ky-cap-hero);
+}
+
+.storefront-theme .ky-cap--plat {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  max-height: var(--ky-cap-plat);
+}
+
+.storefront-theme .ky-cap > img,
+.storefront-theme .ky-cap > picture > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.storefront-theme .ky-cap--detoure {
+  border-radius: 0;
+  overflow: visible;
+}
+
+.storefront-theme .ky-cap--detoure > img,
+.storefront-theme .ky-cap--detoure > picture > img {
+  object-fit: contain;
+}
+
+/* ───────────────────────────── 11. Portals (cart sheet, dish sheet, menus) ───────────────────────────── */
+
+/* Radix renders them outside `.storefront-theme`: they read the `:root` tokens (already ours), but the
+   `--ky-*` paints are not defined there, so every value carries its fallback. */
+body:has(.storefront-theme) :is([data-slot="sheet-content"], [role="dialog"]) {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* ───────────────────────────── 12. Motion grammar ───────────────────────────── */
+
+/* Named keyframes (do not redefine them in a page file):
+     ky-peint        the pass is painted left to right (clip-path inset 100 % → 0 on the paint)
+     ky-peint-droite the same, right to left
+     ky-jet          a line arrives: 0,35 em up and opacity
+     ky-trace        a mini-pass grows from the left (scaleX 0 → 1)
+     ky-recouvre     a field slides over the previous one by --ky-recouvrement (desktop)
+     ky-volet        the mobile menu's green field opens from the left (clip-path)  */
+
+@keyframes ky-peint {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes ky-peint-droite {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes ky-jet {
+  from {
+    opacity: 0;
+    translate: 0 0.35em;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes ky-trace {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ky-recouvre {
+  from {
+    translate: 0 var(--ky-recouvrement);
+  }
+  to {
+    translate: 0 calc(var(--ky-recouvrement) * -1);
+  }
+}
+
+@keyframes ky-volet {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 12.1 La passe AU CHARGEMENT (hero, page heads in the first screen). `--ky-d` = delay.
+     Usage: class="ky-passe ky-passe--orange ky-passe--charge" style="--ky-d: 0ms" */
+  .storefront-theme :is(.ky-passe, .ky-champ).ky-passe--charge::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) var(--ky-d, 0ms) both;
+  }
+
+  .storefront-theme :is(.ky-passe, .ky-champ).ky-passe--charge.ky-passe--droite::before {
+    animation-name: ky-peint-droite;
+  }
+
+  /* 12.2 Le jet AU CHARGEMENT: each child line arrives, 70 ms apart (`--i` = 0, 1, 2…). Hero only; a
+     line is never hidden more than 300 ms. */
+  .storefront-theme .ky-jet--charge > * {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) calc(var(--ky-jet-depart, 0ms) + var(--i, 0) * var(--ky-jet-pas)) both;
+  }
+
+  /* 12.3 La couche suivante: chips and links change coat on hover (colour only, no tilt, no jump). */
+  .storefront-theme .ky-trace--survol::after {
+    transform: scaleX(0);
+    transition: transform var(--ky-t-couche) var(--ky-ease);
+  }
+
+  .storefront-theme .ky-trace--survol:is(:hover, :focus-visible, [aria-current="page"])::after {
+    transform: scaleX(1);
+  }
+}
+
+/* Without motion, a hover trace is simply there on hover. */
+@media (prefers-reduced-motion: reduce) {
+  .storefront-theme .ky-trace--survol::after {
+    opacity: 0;
+  }
+
+  .storefront-theme .ky-trace--survol:is(:hover, :focus-visible, [aria-current="page"])::after {
+    opacity: 1;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* 12.4 La passe AU DÉFILEMENT (every page): the host carries `view-timeline: --ky-passe block`, its
+       paint reads it. Painted from `entry 10%` to `entry 55%` (a field: `entry 0%` to `entry 40%`).
+       Anything already on screen at load is already past its range: painted. */
+    .storefront-theme .ky-passe:not(.ky-passe--charge, .ky-passe--fixe)::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-passe;
+      animation-range: entry 10% entry 55%;
+    }
+
+    .storefront-theme .ky-champ:not(.ky-passe--charge, .ky-passe--fixe)::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-passe;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .storefront-theme :is(.ky-passe, .ky-champ).ky-passe--droite:not(.ky-passe--charge, .ky-passe--fixe)::before {
+      animation-name: ky-peint-droite;
+    }
+
+    /* 12.5 Le jet AU DÉFILEMENT: children of `.ky-jet` arrive one after the other (4 % of range per
+       rank). Put it on titles and short groups below the first screen. */
+    .storefront-theme .ky-jet {
+      view-timeline: --ky-jet block;
+    }
+
+    .storefront-theme .ky-jet > * {
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-jet;
+      animation-range: entry calc(5% + var(--i, 0) * 4%) entry calc(45% + var(--i, 0) * 4%);
+    }
+
+    /* 12.6 La trace au défilement (a mini-pass under a word that enters). */
+    .storefront-theme .ky-trace--defile {
+      view-timeline: --ky-trace block;
+    }
+
+    .storefront-theme .ky-trace--defile::after {
+      animation: ky-trace linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-trace;
+      animation-range: entry 30% entry 80%;
+    }
+  }
+}
+
+/* 12.7 Le recouvrement (desktop ≥ 1024 px only): a field slides 6 svh over the previous coat while it
+   crosses the screen. No perspective. Two animations on one element never touch the same property:
+   do not put `.ky-jet` and `.ky-recouvre` on the same node (both use `translate`). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+    .storefront-theme .ky-recouvre {
+      animation: ky-recouvre linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
+}

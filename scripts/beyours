@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+# beyours — CLI for BeYours restaurant sites (everything from the terminal).
+#
+# Install (once; requires an authenticated gh):
+#   gh api repos/be-yours/beyours-boilerplate/contents/scripts/beyours \
+#     -H "Accept: application/vnd.github.raw" > /usr/local/bin/beyours \
+#     && chmod +x /usr/local/bin/beyours
+#
+# The CLI fetches its scripts from the boilerplate repo on every call, so it
+# picks up template updates without being reinstalled
+# (`beyours upgrade` only updates this wrapper).
+set -euo pipefail
+
+REPO="be-yours/beyours-boilerplate"
+REF="${BEYOURS_REF:-main}"
+TOKEN_FILE="$HOME/.config/beyours/token"
+
+# Packages token: env wins, otherwise the local file (written by `beyours token`)
+if [ -z "${NODE_AUTH_TOKEN:-}" ] && [ -f "$TOKEN_FILE" ]; then
+  NODE_AUTH_TOKEN="$(cat "$TOKEN_FILE")"
+  export NODE_AUTH_TOKEN
+fi
+
+need() { command -v "$1" >/dev/null 2>&1 || { echo "✗ $1 requis" >&2; exit 1; }; }
+
+fetch() {
+  gh api "repos/$REPO/contents/$1?ref=$REF" -H "Accept: application/vnd.github.raw"
+}
+
+show_help() {
+  cat <<'HELP'
+beyours — sites restaurant BeYours
+
+USAGE
+  beyours create <dossier> [options]   Crée un site client complet
+      --name "Chez Luigi"     nom du restaurant
+      --mobile | --web        web + app Expo, ou web seul (défaut)
+      --template <slug>       design : pizzeria, fast-food, food-truck,
+                              poulet, asiatique, ou le nom vendu au
+                              catalogue (pizzeria-trattoria…) ; défaut : neutre
+      --blank                 à partir de zéro : aucun design du catalogue,
+                              tous les packages ; le design se compose ensuite
+      --design-prompt "…"     ce que le client veut comme design, enregistré
+                              dans site/DESIGN_BRIEF.md (sans --template, il
+                              implique --blank)
+      --design-prompt-file F  idem, lu depuis un fichier
+      --repo owner/nom        crée le repo GitHub privé et pousse
+      --description "…"       description SEO
+      --locale fr             locale par défaut
+      --license-key bys_…     clé de maintenance (console BeYours, panneau Licence)
+      --license-api URL       API de licence (https://<deployment>.convex.site)
+      --skip-install          sans pnpm install
+
+  beyours token <PAT>                 Enregistre le PAT read:packages
+                                      (~/.config/beyours/token, chmod 600)
+  beyours version                     Version du template (main)
+  beyours upgrade                     Met à jour cette CLI
+  beyours help                        Cette aide
+
+ENSUITE, DANS UN SITE CRÉÉ
+  pnpx convex dev             provisionne le backend
+  pnpm env:setup              wizard .env (web + convex + mobile)
+  pnpm convex:env             pousse .env.convex côté Convex
+  pnpm dev                    lance le site
+  pnpm design:check           contrôle le design du site (contraste AA, layout, polices)
+  pnpm update:engine          maj logique métier (npm)
+  pnpm update:template        maj shell (git)
+  pnpm add:mobile             active l'app mobile après coup
+
+PRÉ-REQUIS : gh (authentifié), node ≥ 20, pnpm, git.
+DOCS : https://github.com/be-yours/beyours-boilerplate
+HELP
+}
+
+cmd="${1:-help}"
+case "$cmd" in
+  create)
+    shift
+    need gh
+    need node
+    need pnpm
+    need git
+    [ $# -ge 1 ] || {
+      echo "Usage : beyours create <dossier> [options] (beyours help)" >&2
+      exit 1
+    }
+    if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+      echo "⚠ Pas de NODE_AUTH_TOKEN ni ~/.config/beyours/token — l'install des packages privés sera sautée." >&2
+      echo "  Enregistrer un PAT read:packages : beyours token ghp_xxx" >&2
+    fi
+    fetch "scripts/create-site.mjs" | node --input-type=module - "$@"
+    ;;
+  token)
+    shift
+    [ "${1:-}" ] || {
+      echo "Usage : beyours token <PAT read:packages>" >&2
+      exit 1
+    }
+    mkdir -p "$(dirname "$TOKEN_FILE")"
+    printf '%s' "$1" > "$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE"
+    echo "✓ Token enregistré dans $TOKEN_FILE (chmod 600)."
+    ;;
+  upgrade)
+    need gh
+    dest="$(command -v beyours || true)"
+    [ -n "$dest" ] || { echo "beyours introuvable dans le PATH" >&2; exit 1; }
+    fetch "scripts/beyours" > "${dest}.tmp"
+    chmod +x "${dest}.tmp"
+    mv "${dest}.tmp" "$dest"
+    echo "✓ CLI mise à jour ($dest)."
+    ;;
+  version | --version | -v)
+    need gh
+    need node
+    fetch "package.json" | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>console.log("boilerplate v"+JSON.parse(d).version+" (ref: "+(process.env.BEYOURS_REF||"main")+")"))'
+    ;;
+  help | -h | --help)
+    show_help
+    ;;
+  *)
+    echo "Commande inconnue : $cmd" >&2
+    show_help
+    exit 1
+    ;;
+esac

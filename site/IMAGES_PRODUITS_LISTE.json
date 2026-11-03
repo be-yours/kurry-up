@@ -1,0 +1,542 @@
+{
+  "marque": "Kurry Up",
+  "dossier": "public/brand/products/",
+  "format": "<slug>.webp et <slug>-sm.webp",
+  "produits": [
+    {
+      "slug": "menu-kurry-up",
+      "nom": "Menu Kurry Up",
+      "categorie": "formules",
+      "categorie_nom": "Formules",
+      "description": "1 protéine, 3 légumes, 3 toppings, un naan et une boisson au choix. Compose ton plat préféré en 2 minutes.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/menu-kurry-up.webp",
+      "fichier_sm": "/brand/products/menu-kurry-up-sm.webp"
+    },
+    {
+      "slug": "bowl-kurry-up",
+      "nom": "Bowl Kurry Up",
+      "categorie": "formules",
+      "categorie_nom": "Formules",
+      "description": "1 protéine, 3 légumes et 3 toppings, composés par toi en 2 minutes.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/bowl-kurry-up.webp",
+      "fichier_sm": "/brand/products/bowl-kurry-up-sm.webp"
+    },
+    {
+      "slug": "sandwich-a-composer",
+      "nom": "Sandwich à composer",
+      "categorie": "formules",
+      "categorie_nom": "Formules",
+      "description": "1 protéine, 3 légumes et 3 toppings, composés par toi en 2 minutes.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/sandwich-a-composer.webp",
+      "fichier_sm": "/brand/products/sandwich-a-composer-sm.webp"
+    },
+    {
+      "slug": "salade-raja",
+      "nom": "Salade Raja",
+      "categorie": "formules",
+      "categorie_nom": "Formules",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/salade-raja.webp",
+      "fichier_sm": "/brand/products/salade-raja-sm.webp"
+    },
+    {
+      "slug": "salade-rani",
+      "nom": "Salade Rani",
+      "categorie": "formules",
+      "categorie_nom": "Formules",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/salade-rani.webp",
+      "fichier_sm": "/brand/products/salade-rani-sm.webp"
+    },
+    {
+      "slug": "raita",
+      "nom": "Raïta",
+      "categorie": "entrees",
+      "categorie_nom": "Entrées",
+      "description": "Yaourt frais, concombre, carottes et épices.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/raita.webp",
+      "fichier_sm": "/brand/products/raita-sm.webp"
+    },
+    {
+      "slug": "samossa",
+      "nom": "Samossa",
+      "categorie": "entrees",
+      "categorie_nom": "Entrées",
+      "description": "2 pièces. Beignets farcis de légumes ou de viande, piment, coriandre, curcuma.",
+      "choix": [
+        "Légumes",
+        "Viande"
+      ],
+      "actif": true,
+      "fichier": "/brand/products/samossa.webp",
+      "fichier_sm": "/brand/products/samossa-sm.webp"
+    },
+    {
+      "slug": "pakora",
+      "nom": "Pakora",
+      "categorie": "entrees",
+      "categorie_nom": "Entrées",
+      "description": "4 pièces. Beignet de pomme de terre à la farine de pois.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/pakora.webp",
+      "fichier_sm": "/brand/products/pakora-sm.webp"
+    },
+    {
+      "slug": "poulet-tikka",
+      "nom": "Poulet tikka",
+      "categorie": "entrees",
+      "categorie_nom": "Entrées",
+      "description": "Brochette de blanc de poulet.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/poulet-tikka.webp",
+      "fichier_sm": "/brand/products/poulet-tikka-sm.webp"
+    },
+    {
+      "slug": "samossa-chaat",
+      "nom": "Samossa chaat",
+      "categorie": "entrees",
+      "categorie_nom": "Entrées",
+      "description": "Samossa aux légumes, oignon haché, pois chiches, massala et chutney maison.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/samossa-chaat.webp",
+      "fichier_sm": "/brand/products/samossa-chaat-sm.webp"
+    },
+    {
+      "slug": "soupe-de-lentilles",
+      "nom": "Soupe de lentilles",
+      "categorie": "entrees",
+      "categorie_nom": "Entrées",
+      "description": "Coriandre fraîche et fenugrec.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/soupe-de-lentilles.webp",
+      "fichier_sm": "/brand/products/soupe-de-lentilles-sm.webp"
+    },
+    {
+      "slug": "butter-chicken",
+      "nom": "Butter chicken",
+      "categorie": "plats-poulet",
+      "categorie_nom": "Plats de poulet",
+      "description": "Poulet grillé au tandoor, sauce crémeuse, douce et onctueuse, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/butter-chicken.webp",
+      "fichier_sm": "/brand/products/butter-chicken-sm.webp"
+    },
+    {
+      "slug": "poulet-tikka-massala",
+      "nom": "Poulet tikka massala",
+      "categorie": "plats-poulet",
+      "categorie_nom": "Plats de poulet",
+      "description": "Blanc de poulet grillé, sauce tikka aux poivrons et aux oignons, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/poulet-tikka-massala.webp",
+      "fichier_sm": "/brand/products/poulet-tikka-massala-sm.webp"
+    },
+    {
+      "slug": "poulet-karahi",
+      "nom": "Poulet karahi",
+      "categorie": "plats-poulet",
+      "categorie_nom": "Plats de poulet",
+      "description": "Curry de poulet relevé, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/poulet-karahi.webp",
+      "fichier_sm": "/brand/products/poulet-karahi-sm.webp"
+    },
+    {
+      "slug": "poulet-korma",
+      "nom": "Poulet korma",
+      "categorie": "plats-poulet",
+      "categorie_nom": "Plats de poulet",
+      "description": "Poulet à la crème fraîche, amandes et raisins, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/poulet-korma.webp",
+      "fichier_sm": "/brand/products/poulet-korma-sm.webp"
+    },
+    {
+      "slug": "agneau-madras",
+      "nom": "Agneau madras",
+      "categorie": "plats-agneau",
+      "categorie_nom": "Plats d'agneau",
+      "description": "Curry d'agneau et riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/agneau-madras.webp",
+      "fichier_sm": "/brand/products/agneau-madras-sm.webp"
+    },
+    {
+      "slug": "agneau-shahi-korma",
+      "nom": "Agneau shahi korma",
+      "categorie": "plats-agneau",
+      "categorie_nom": "Plats d'agneau",
+      "description": "Curry d'agneau à la crème fraîche, amandes et raisins, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/agneau-shahi-korma.webp",
+      "fichier_sm": "/brand/products/agneau-shahi-korma-sm.webp"
+    },
+    {
+      "slug": "agneau-karahi",
+      "nom": "Agneau karahi",
+      "categorie": "plats-agneau",
+      "categorie_nom": "Plats d'agneau",
+      "description": "Agneau mijoté aux épices, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/agneau-karahi.webp",
+      "fichier_sm": "/brand/products/agneau-karahi-sm.webp"
+    },
+    {
+      "slug": "palak-paneer",
+      "nom": "Palak paneer",
+      "categorie": "legumes",
+      "categorie_nom": "Légumes",
+      "description": "Curry d'épinards et de pommes de terre, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/palak-paneer.webp",
+      "fichier_sm": "/brand/products/palak-paneer-sm.webp"
+    },
+    {
+      "slug": "daal-tarka",
+      "nom": "Daal tarka",
+      "categorie": "legumes",
+      "categorie_nom": "Légumes",
+      "description": "Curry de lentilles et de tomates, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/daal-tarka.webp",
+      "fichier_sm": "/brand/products/daal-tarka-sm.webp"
+    },
+    {
+      "slug": "aubergine-massala",
+      "nom": "Aubergine massala",
+      "categorie": "legumes",
+      "categorie_nom": "Légumes",
+      "description": "Aubergine fumée, tomates, oignons et garam massala, riz basmati.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/aubergine-massala.webp",
+      "fichier_sm": "/brand/products/aubergine-massala-sm.webp"
+    },
+    {
+      "slug": "chana-massala",
+      "nom": "Chana massala",
+      "categorie": "legumes",
+      "categorie_nom": "Légumes",
+      "description": "Pois chiches en sauce curry.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/chana-massala.webp",
+      "fichier_sm": "/brand/products/chana-massala-sm.webp"
+    },
+    {
+      "slug": "biryani-poulet",
+      "nom": "Biryani poulet",
+      "categorie": "biryanis",
+      "categorie_nom": "Biryanis",
+      "description": "Riz et poulet mariné.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/biryani-poulet.webp",
+      "fichier_sm": "/brand/products/biryani-poulet-sm.webp"
+    },
+    {
+      "slug": "biryani-legumes",
+      "nom": "Biryani légumes",
+      "categorie": "biryanis",
+      "categorie_nom": "Biryanis",
+      "description": "Riz et légumes marinés.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/biryani-legumes.webp",
+      "fichier_sm": "/brand/products/biryani-legumes-sm.webp"
+    },
+    {
+      "slug": "biryani-agneau",
+      "nom": "Biryani agneau",
+      "categorie": "biryanis",
+      "categorie_nom": "Biryanis",
+      "description": "Riz et agneau rôti mariné.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/biryani-agneau.webp",
+      "fichier_sm": "/brand/products/biryani-agneau-sm.webp"
+    },
+    {
+      "slug": "biryani-crevettes",
+      "nom": "Biryani crevettes",
+      "categorie": "biryanis",
+      "categorie_nom": "Biryanis",
+      "description": "Riz et crevettes marinées au garam masala.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/biryani-crevettes.webp",
+      "fichier_sm": "/brand/products/biryani-crevettes-sm.webp"
+    },
+    {
+      "slug": "naan-nature",
+      "nom": "Naan nature",
+      "categorie": "naans",
+      "categorie_nom": "Naans et pains",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/naan-nature.webp",
+      "fichier_sm": "/brand/products/naan-nature-sm.webp"
+    },
+    {
+      "slug": "naan-ail",
+      "nom": "Naan à l'ail",
+      "categorie": "naans",
+      "categorie_nom": "Naans et pains",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/naan-ail.webp",
+      "fichier_sm": "/brand/products/naan-ail-sm.webp"
+    },
+    {
+      "slug": "naan-fromage",
+      "nom": "Naan fromage",
+      "categorie": "naans",
+      "categorie_nom": "Naans et pains",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/naan-fromage.webp",
+      "fichier_sm": "/brand/products/naan-fromage-sm.webp"
+    },
+    {
+      "slug": "chapati",
+      "nom": "Chapati",
+      "categorie": "naans",
+      "categorie_nom": "Naans et pains",
+      "description": "Pain plat, vegan.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/chapati.webp",
+      "fichier_sm": "/brand/products/chapati-sm.webp"
+    },
+    {
+      "slug": "naan-ail-fromage",
+      "nom": "Naan ail et fromage",
+      "categorie": "naans",
+      "categorie_nom": "Naans et pains",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/naan-ail-fromage.webp",
+      "fichier_sm": "/brand/products/naan-ail-fromage-sm.webp"
+    },
+    {
+      "slug": "naan-chocolat-noisette",
+      "nom": "Naan chocolat noisette",
+      "categorie": "desserts",
+      "categorie_nom": "Desserts",
+      "description": "Naan nappé de pâte à tartiner chocolat noisette.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/naan-chocolat-noisette.webp",
+      "fichier_sm": "/brand/products/naan-chocolat-noisette-sm.webp"
+    },
+    {
+      "slug": "cookie-chocolat-au-lait",
+      "nom": "Cookie chocolat au lait",
+      "categorie": "desserts",
+      "categorie_nom": "Desserts",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/cookie-chocolat-au-lait.webp",
+      "fichier_sm": "/brand/products/cookie-chocolat-au-lait-sm.webp"
+    },
+    {
+      "slug": "cookie-caramel-cacahuete",
+      "nom": "Cookie caramel cacahuète",
+      "categorie": "desserts",
+      "categorie_nom": "Desserts",
+      "description": "Cookie au caramel et au beurre de cacahuète.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/cookie-caramel-cacahuete.webp",
+      "fichier_sm": "/brand/products/cookie-caramel-cacahuete-sm.webp"
+    },
+    {
+      "slug": "fromage-blanc-mangue-muesli",
+      "nom": "Fromage blanc, coulis de mangue et muesli",
+      "categorie": "desserts",
+      "categorie_nom": "Desserts",
+      "description": "",
+      "choix": [],
+      "actif": false,
+      "fichier": "/brand/products/fromage-blanc-mangue-muesli.webp",
+      "fichier_sm": "/brand/products/fromage-blanc-mangue-muesli-sm.webp"
+    },
+    {
+      "slug": "mousse-au-chocolat",
+      "nom": "Mousse au chocolat",
+      "categorie": "desserts",
+      "categorie_nom": "Desserts",
+      "description": "",
+      "choix": [],
+      "actif": false,
+      "fichier": "/brand/products/mousse-au-chocolat.webp",
+      "fichier_sm": "/brand/products/mousse-au-chocolat-sm.webp"
+    },
+    {
+      "slug": "mangue-menthe",
+      "nom": "Mangue et menthe ciselée",
+      "categorie": "desserts",
+      "categorie_nom": "Desserts",
+      "description": "",
+      "choix": [],
+      "actif": false,
+      "fichier": "/brand/products/mangue-menthe.webp",
+      "fichier_sm": "/brand/products/mangue-menthe-sm.webp"
+    },
+    {
+      "slug": "eau-33-cl",
+      "nom": "Eau 33 cl",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [
+        "Plate",
+        "Gazeuse"
+      ],
+      "actif": true,
+      "fichier": "/brand/products/eau-33-cl.webp",
+      "fichier_sm": "/brand/products/eau-33-cl-sm.webp"
+    },
+    {
+      "slug": "soda-33-cl",
+      "nom": "Soda 33 cl",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/soda-33-cl.webp",
+      "fichier_sm": "/brand/products/soda-33-cl-sm.webp"
+    },
+    {
+      "slug": "the-glace-33-cl",
+      "nom": "Thé glacé 33 cl",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/the-glace-33-cl.webp",
+      "fichier_sm": "/brand/products/the-glace-33-cl-sm.webp"
+    },
+    {
+      "slug": "the-glace-50-cl",
+      "nom": "Thé glacé 50 cl",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/the-glace-50-cl.webp",
+      "fichier_sm": "/brand/products/the-glace-50-cl-sm.webp"
+    },
+    {
+      "slug": "eau-de-coco",
+      "nom": "Eau de coco",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/eau-de-coco.webp",
+      "fichier_sm": "/brand/products/eau-de-coco-sm.webp"
+    },
+    {
+      "slug": "biere-indienne-33-cl",
+      "nom": "Bière indienne 33 cl",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "L'abus d'alcool est dangereux pour la santé, à consommer avec modération.",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/biere-indienne-33-cl.webp",
+      "fichier_sm": "/brand/products/biere-indienne-33-cl-sm.webp"
+    },
+    {
+      "slug": "the-indien",
+      "nom": "Thé indien",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [],
+      "actif": true,
+      "fichier": "/brand/products/the-indien.webp",
+      "fichier_sm": "/brand/products/the-indien-sm.webp"
+    },
+    {
+      "slug": "lassi",
+      "nom": "Lassi",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "33 cl, fait maison.",
+      "choix": [
+        "Nature",
+        "Salé",
+        "Mangue",
+        "Rose"
+      ],
+      "actif": true,
+      "fichier": "/brand/products/lassi.webp",
+      "fichier_sm": "/brand/products/lassi-sm.webp"
+    },
+    {
+      "slug": "jus-indien-25-cl",
+      "nom": "Jus indien 25 cl",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [
+        "Litchi",
+        "Mangue"
+      ],
+      "actif": true,
+      "fichier": "/brand/products/jus-indien-25-cl.webp",
+      "fichier_sm": "/brand/products/jus-indien-25-cl-sm.webp"
+    },
+    {
+      "slug": "kombucha",
+      "nom": "Kombucha",
+      "categorie": "boissons",
+      "categorie_nom": "Boissons",
+      "description": "",
+      "choix": [
+        "Grenade",
+        "Mangue passion",
+        "Gingembre"
+      ],
+      "actif": true,
+      "fichier": "/brand/products/kombucha.webp",
+      "fichier_sm": "/brand/products/kombucha-sm.webp"
+    }
+  ]
+}

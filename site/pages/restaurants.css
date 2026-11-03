@@ -1,0 +1,578 @@
+/* restaurants.css : fichier de page de La Fresque, propriétaire voir site/ART_DIRECTION.md §2. Tout sélecteur commence par .storefront-theme. */
+
+/*
+ * Owner: agent « réseau + franchise ». Pages: /restaurants (site/components/restaurants/RestaurantsPage.tsx)
+ * and the engine's /store-selector (dressed only, its markup is the engine's).
+ * Contract: site/ART_DIRECTION.md § 13 « Le mur des adresses ». Primitives used, never redefined here:
+ * .ky-champ--*, .ky-passe--*, .ky-chiffre, .ky-surtitre, .ky-titre, .ky-lead, .ky-btn, .ky-lien, .ky-jet, .ky-mur,
+ * .ky-sous-entete. Motion: each field paints itself as it enters (shared.css § 12.4) and the title's pass at
+ * load (§ 12.1); nothing else moves.
+ */
+
+/* ───────────────────────── 0. « À confirmer » (local: shared.css has no marker yet) ───────────────────────── */
+
+/* A small matt tag in the colour of the text around it, on a 14 % wash of that same colour: it reads on the
+   wall and on every field, light and dark, with no frame. */
+.storefront-theme .ky-rs-confirmer {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12em 0.55em 0.1em;
+  border-radius: var(--ky-r-ctrl);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  color: var(--ky-texte);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  max-width: 100%;
+  vertical-align: 0.12em;
+}
+
+/* ───────────────────────── 1. The page ───────────────────────── */
+
+.storefront-theme .ky-rs {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+/* Store closed: the engine's banner (fixed, 40 px, `h-10`) pushes the bar down by 40 px; the page follows the
+   bar (shared .ky-sous-entete counts the bar only), or « LE MUR DES ADRESSES » slid under it. The banner arrives
+   with the store's status, after the first paint: the page moves by `translate` (a 40 px padding cost 0,04 of
+   CLS at 375); the bottom margin, far below the first view, keeps the footer clear of the moved page. */
+.storefront-theme:has(> div.fixed.top-0.h-10.z-50) .ky-rs.ky-sous-entete {
+  translate: 0 40px;
+  margin-bottom: 40px;
+}
+
+.storefront-theme .ky-rs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.75rem;
+  margin-top: 1.75rem;
+}
+
+/* ───────────────────────── 2. Head: title on its green pass, three painted numbers ───────────────────────── */
+
+.storefront-theme .ky-rs-tete {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.storefront-theme .ky-rs-tete__texte {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+}
+
+.storefront-theme .ky-rs-tete__titre {
+  margin: 0.25rem 0 0.35rem -0.55em;
+}
+
+.storefront-theme .ky-rs-chiffres {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.storefront-theme .ky-rs-chiffres li {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: end;
+  gap: 0.25rem 1rem;
+}
+
+.storefront-theme .ky-rs-chiffres__grand {
+  grid-column: 1 / -1;
+}
+
+.storefront-theme .ky-rs-chiffres__mot {
+  --ky-chiffre-couleur: var(--ky-mot);
+}
+
+.storefront-theme .ky-rs-chiffres__texte {
+  max-width: 24ch;
+  padding-bottom: 0.35rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ky-texte);
+}
+
+@media (min-width: 640px) {
+  .storefront-theme .ky-rs-chiffres {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme .ky-rs-tete {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: end;
+  }
+}
+
+/* ───────────────────────── 3. The painted mark of a restaurant ───────────────────────── */
+
+/* Bungee, as large as its tile allows: the size follows the longest line (`--rs-len`, set by the component)
+   in container units of its tile, never under 28 px (Bungee's floor), never over `--rs-max`. */
+.storefront-theme .ky-rs-marque {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(1.75rem, calc(var(--rs-k, 128cqi) / var(--rs-len, 3)), var(--rs-max, 9.5rem));
+  line-height: 0.84;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-chiffre-couleur, var(--ky-orange));
+}
+
+.storefront-theme .ky-rs-marque__ligne {
+  display: block;
+  white-space: nowrap;
+}
+
+.storefront-theme .ky-rs-ordinal {
+  display: inline-block;
+  margin-left: 0.04em;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.36em;
+  line-height: 1;
+  text-transform: none;
+  vertical-align: top;
+  translate: 0 0.12em;
+}
+
+/* ───────────────────────── 4. Paris Washington: the one that takes orders here ───────────────────────── */
+
+.storefront-theme .ky-champ.ky-rs-ici {
+  padding-block: clamp(2.75rem, 6vw, 5.5rem);
+}
+
+.storefront-theme .ky-rs-ici__grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 2.5rem);
+  width: min(1240px, 100%);
+  margin-inline: auto;
+}
+
+.storefront-theme .ky-rs-ici__marque {
+  font-size: clamp(7rem, 26vw, 19rem);
+  line-height: 0.8;
+}
+
+.storefront-theme .ky-rs-ici__texte {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  align-content: center;
+}
+
+.storefront-theme .ky-rs-ici__adresse {
+  color: var(--ky-texte);
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme .ky-rs-ici__grille {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+  }
+}
+
+/* ───────────────────────── 5. Facts of a restaurant (term / value) ───────────────────────── */
+
+.storefront-theme .ky-rs-infos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem 1.5rem;
+  margin: 0;
+}
+
+.storefront-theme .ky-rs-infos > div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.storefront-theme .ky-rs-infos dt {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme .ky-rs-infos dd {
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-rs-infos--ici {
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .storefront-theme .ky-rs-infos--ici {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ───────────────────────── 6. The wall: one field per restaurant, in a mosaic ───────────────────────── */
+
+.storefront-theme .ky-rs-reseau {
+  margin-top: clamp(3.5rem, 8vw, 6.5rem);
+}
+
+.storefront-theme .ky-rs-reseau__tete {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+}
+
+/* Phone: one column. Tablet: 6 columns, `dense` so the small Massy tile fills the hole beside Rennes.
+   Desktop: 12 columns, in reading order (the spans in copy.ts tile them with no hole). No tile spans two
+   rows: a two-row tile is stretched to the height of the two rows beside it and stands half empty. */
+.storefront-theme .ky-rs-mosaique {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+@media (min-width: 768px) {
+  .storefront-theme .ky-rs-mosaique {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+  }
+
+  .storefront-theme .ky-rs-tuile {
+    grid-column: span var(--rs-md, 3);
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme .ky-rs-mosaique {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-flow: row;
+  }
+
+  .storefront-theme .ky-rs-tuile {
+    grid-column: span var(--rs-lg, 4);
+  }
+}
+
+/* A tile is a field (its paint, its brush edge, its scroll paint: shared.css), laid inside the wall's width:
+   no side margin of its own, a tighter padding, and its own container for the mark's size. */
+.storefront-theme .ky-champ.ky-rs-tuile {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+  margin-inline: 0;
+  padding: clamp(1.6rem, 3vw, 2.5rem) clamp(1.35rem, 2.6vw, 2.25rem);
+}
+
+.storefront-theme .ky-rs-tuile[data-rs-taille="grande"] {
+  --rs-max: 20rem;
+}
+
+.storefront-theme .ky-rs-statut {
+  margin: 0;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-rs-tuile .ky-rs-marque {
+  margin-block: 0.35rem 0.15rem;
+}
+
+.storefront-theme .ky-rs-nom {
+  margin: 0;
+  font-size: 1.3125rem;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-rs-lieu {
+  display: block;
+  margin-top: 0.2rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme .ky-rs-fait {
+  max-width: 46ch;
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-rs-tuile .ky-rs-infos {
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
+
+@container (min-width: 30rem) {
+  .storefront-theme .ky-rs-tuile .ky-rs-infos {
+    grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  }
+}
+
+/* A band (La Réunion, 12 columns): the mark on the left, the words on the right, so a full-width tile is not
+   a tall one. Its mark is sized on half the tile (`--rs-k`). Only on the 12-column wall. */
+@media (min-width: 1024px) {
+  .storefront-theme .ky-champ.ky-rs-tuile[data-rs-forme="bandeau"] {
+    --rs-k: 56cqi;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-content: start;
+    gap: 0.85rem clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .storefront-theme .ky-rs-tuile[data-rs-forme="bandeau"] > .ky-rs-statut {
+    grid-column: 1 / -1;
+  }
+
+  .storefront-theme .ky-rs-tuile[data-rs-forme="bandeau"] > .ky-rs-marque {
+    grid-column: 1;
+    grid-row: 2 / span 4;
+    align-self: center;
+  }
+
+  .storefront-theme .ky-rs-tuile[data-rs-forme="bandeau"] > :not(.ky-rs-statut, .ky-rs-marque) {
+    grid-column: 2;
+  }
+
+  .storefront-theme .ky-rs-tuile[data-rs-forme="bandeau"] .ky-rs-infos {
+    margin-top: 0;
+  }
+}
+
+/* La Réunion: the brand's two ways in, numbered with a painted figure. */
+.storefront-theme .ky-rs-acces {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.storefront-theme .ky-rs-acces__titre {
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-rs-acces__liste {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.storefront-theme .ky-rs-acces__liste li {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .ky-rs-acces__rang {
+  font-family: var(--ky-font-titre);
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--ky-chiffre-couleur, var(--ky-texte));
+}
+
+/* ───────────────────────── 7. The end: what is still missing, and the order ───────────────────────── */
+
+.storefront-theme .ky-champ.ky-rs-suite {
+  margin-top: clamp(3rem, 7vw, 5.5rem);
+}
+
+.storefront-theme .ky-rs-suite__grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem 3rem;
+  width: min(1240px, 100%);
+  margin-inline: auto;
+}
+
+.storefront-theme .ky-rs-suite__texte {
+  max-width: 52ch;
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+  line-height: 1.55;
+  color: var(--ky-texte);
+}
+
+/* On ochre, the ochre trace of `.ky-lien` would vanish: a cream trace instead. */
+.storefront-theme .ky-rs-suite .ky-lien {
+  --ky-lien-trace: var(--ky-badigeon);
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme .ky-rs-suite__grille {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+
+  .storefront-theme .ky-rs-suite__grille > .ky-rs-actions {
+    grid-column: 2;
+    margin-top: 0.25rem;
+  }
+}
+
+/* ───────────────────────── 8. /store-selector (engine page, dressed) ───────────────────────── */
+
+/* Engine markup (app/(storefront)/store-selector/_components/StoreSelectorContent.tsx):
+     main > div.container.mx-auto.px-4.py-8 > h1 + p + div.grid > [data-slot="card"][role="button"] …
+   The wrapper class list is unique to this page; `:has(> h1 + p)` pins it further. The engine pads it only
+   `py-8`, under a fixed header: it is cleared here. The title gets a green pass painted at load, the cards
+   become cream slabs on an ochre field. */
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) {
+  padding-top: calc(var(--ky-entete-h) + clamp(1.5rem, 4vw, 3rem));
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+/* store closed: follow the bar under the engine's 40 px banner (by `translate`, as /restaurants above). The page
+   is short and its footer in view: no margin, the bottom padding (48 px at least) takes the 40 px. */
+.storefront-theme:has(> div.fixed.top-0.h-10.z-50) main > div.container.mx-auto.py-8:has(> h1 + p) {
+  translate: 0 40px;
+}
+
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) > h1 {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  margin: 0 0 1.25rem -0.2em;
+  padding: 0.18em 0.55em 0.12em;
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) > h1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) > p {
+  max-width: 40ch;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+/* The grid of cards sits on an ochre field (its absolutely placed paint takes no grid cell). */
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) > div.grid {
+  position: relative;
+  isolation: isolate;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) > div.grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) [data-slot="card"][role="button"] {
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  background: var(--ky-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) [data-slot="card"][role="button"]:is(:hover, :focus-visible) {
+  background: var(--ky-peche);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.dark .storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) [data-slot="card"][role="button"]:is(:hover, :focus-visible) {
+  background: var(--ky-vert);
+}
+
+/* The focus ring of the card: the site's, on the ochre field (ink reads on ochre, 7,08:1). */
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) [data-slot="card"][role="button"]:focus-visible {
+  outline: 3px solid var(--ky-encre);
+  outline-offset: 3px;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}
+
+/* The restaurant's name is an h2 of 18 px: Bungee is for 28 px and more, so it is Mukta 800 here. */
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) [data-slot="card"] h2 {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+/* « Commander ici » (engine button, orange with an ink label): brushed corners, not rounded. */
+.storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) [data-slot="card"] [data-slot="button"] {
+  min-height: 44px;
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* ───────────────────────── 9. Motion ───────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-theme main > div.container.mx-auto.py-8:has(> h1 + p) > h1::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 120ms both;
+  }
+}

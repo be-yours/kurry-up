@@ -1,0 +1,584 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  web:
+    name: Lint + Test + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Guard — pas d'overrides link: commités"
+        run: |
+          if grep -q '"link:' package.json; then
+            echo "::error::package.json contient des overrides link: (mode engine-link). Lancer pnpm engine:unlink avant de commiter."
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        # --frozen-lockfile as soon as the lockfile is committed; otherwise a
+        # plain install (first template commit, before the first tokened install)
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            pnpm install
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests (Vitest)
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_CONVEX_URL: https://placeholder.convex.cloud
+          CONVEX_SITE_URL: https://placeholder.convex.site
+
+      - name: Which engine packages this run installed
+        # Last, and on `always()`, so it prints under a red Lint, Typecheck,
+        # Test or Build — which is where a wrong engine version actually
+        # surfaces. Until now this only ran in `e2e`, a job `needs: web` skips
+        # outright when this one fails, so the answer was available only in the
+        # runs that did not need it (#389, P1-F5).
+        if: always()
+        run: node scripts/engine-versions.mjs
+
+  detect-mobile:
+    name: Detect mobile app
+    runs-on: ubuntu-latest
+    outputs:
+      has_mobile: ${{ steps.check.outputs.has_mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f mobile/package.json ]; then
+            echo "has_mobile=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_mobile=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  mobile:
+    name: Lint + Typecheck (mobile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: detect-mobile
+    if: needs.detect-mobile.outputs.has_mobile == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The mobile app is self-contained (no private packages): no token needed
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: pnpm install
+
+      - name: Lint mobile
+        working-directory: mobile
+        run: pnpm lint
+
+      - name: Typecheck mobile
+        working-directory: mobile
+        run: pnpm typecheck
+
+  e2e:
+    name: E2E tests (Playwright)
+    runs-on: ubuntu-latest
+    # The suite takes roughly 20 minutes unsharded on a warm cache. 45 leaves
+    # room for a slow runner without letting a hung server burn an hour.
+    timeout-minutes: 45
+    needs: web
+
+    env:
+      # ── The backend under test ────────────────────────────────────────────
+      #
+      # This job used to be gated on `vars.CONVEX_E2E_ENABLED == 'true'`, with
+      # E2E_* secrets pointing at a hosted Convex deployment that somebody was
+      # expected to provision. Nobody ever did — not here and not in the
+      # upstream engine, where the same gate skipped the suite on every run for
+      # months while the check reported success. A skipped job reports neutral,
+      # and GitHub counts neutral as satisfied, so requiring this check bought
+      # nothing at all.
+      #
+      # The gate is gone because its premise was wrong: the suite needs no
+      # account and no secrets. The job starts its own Convex backend on the
+      # runner from the published binary. There is nothing left to leave unset.
+      CONVEX_BACKEND_VERSION: precompiled-2026-08-25-7cce8fb
+      CONVEX_PORT: "3310"
+      CONVEX_SITE_PORT: "3311"
+      CONVEX_INSTANCE: beyours-e2e
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            pnpm install
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+
+      # WHICH ENGINE DID THIS RUN ACTUALLY TEST? (#389)
+      #
+      # This is the question a red run on this repository raises and the one its
+      # log could not answer. `package.json` pins `"@be-yours/admin": "^9.0.0"`
+      # — a RANGE — and this repository is the mirror of `apps/themes`, whose own
+      # CI links the engine with `workspace:^` and therefore tests the current
+      # source. So a fix merged in the engine is green there and absent here
+      # until a release is cut, and a run in between executes the UNFIXED
+      # component with the FIXED spec.
+      #
+      # That happened on 7 September 2026. #387 fixed `addChoice`, merged green,
+      # and this suite then failed three times on the spec that fix was written
+      # for — while installing `admin@9.0.0`, the version from before it. The run
+      # read as the fix failing. It cost a full diagnostic cycle spent on the
+      # wrong hypothesis, and would have cost more if the next step had been to
+      # "fix" working code.
+      #
+      # Three lines and a glance replaces that investigation. Printed BEFORE
+      # anything can fail, so it is in the log of a run that dies at the build
+      # as well as one that dies in a spec.
+      - name: Which engine versions is this testing?
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "### Engine versions under test"
+            echo
+            echo '```'
+            node -e '
+              const { readFileSync } = require("node:fs")
+              const deps = JSON.parse(readFileSync("package.json", "utf8")).dependencies ?? {}
+              const engine = Object.keys(deps).filter((name) => name.startsWith("@be-yours/")).sort()
+              if (engine.length === 0) { console.log("no @be-yours/* dependency declared"); process.exit(0) }
+              for (const name of engine) {
+                let installed = "NOT INSTALLED"
+                try {
+                  installed = JSON.parse(
+                    readFileSync(`node_modules/${name}/package.json`, "utf8")
+                  ).version
+                } catch {}
+                console.log(`${name.padEnd(36)} range ${String(deps[name]).padEnd(12)} installed ${installed}`)
+              }
+            '
+            echo '```'
+            echo
+            echo "A failure here is evidence about the INSTALLED version above, not"
+            echo "about the engine's \`main\`. A fix merged in the engine reaches this"
+            echo "repository only when a release is published and the mirror syncs."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm test:e2e:install
+
+      - name: Cache the Convex backend binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/convex-e2e
+          key: convex-backend-${{ env.CONVEX_BACKEND_VERSION }}
+
+      # The same guard the engine's own e2e workflow carries, and for the same
+      # reason — this is the CI a client's site runs, so it meets the identical
+      # ceiling.
+      #
+      # `convex.json` declares `node.externalPackages`, and `convex deploy`
+      # installs those with a real `npm install` inside the push, under a
+      # 300-second limit the backend enforces and exposes no flag to raise.
+      # Measured on the engine repository: that install took 158-285s on CI
+      # runners and lost seven consecutive runs to `evaluate_push ... 408`.
+      # Fetching the packages first moves the download out of the timed window;
+      # the cache keeps it out on every later run.
+      - name: Cache the npm downloads the Convex push needs
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: convex-external-deps-${{ hashFiles('convex.json', 'package.json') }}
+          restore-keys: |
+            convex-external-deps-
+
+      - name: Pre-fetch the Convex external dependencies
+        run: |
+          set -euo pipefail
+
+          # Read from convex.json rather than restated, so this cannot drift
+          # from what the backend will actually install.
+          SPECS="$(node -e '
+            const fs = require("fs")
+            const cfg = JSON.parse(fs.readFileSync("convex.json", "utf8"))
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"))
+            const pinned = { ...pkg.dependencies, ...pkg.devDependencies }
+            const specs = (cfg.node?.externalPackages ?? [])
+              .filter((n) => n !== "*")
+              .map((n) => (pinned[n] ? `${n}@${pinned[n]}` : n))
+            process.stdout.write(specs.join(" "))
+          ')"
+
+          if [ -z "$SPECS" ]; then
+            echo "No external packages declared — nothing to pre-fetch."
+            exit 0
+          fi
+
+          echo "Warming ~/.npm for: $SPECS"
+
+          # Non-fatal: a warm cache is an optimisation, and a registry hiccup
+          # here must not fail a suite that can still run.
+          npm install --prefix "$RUNNER_TEMP/convex-deps-warm" \
+            --ignore-scripts --no-audit --no-fund --loglevel=error \
+            $SPECS || echo "::warning::Pre-fetch failed; the push will fetch these itself."
+
+          echo "~/.npm is now $(du -sh "$HOME/.npm" 2>/dev/null | cut -f1)."
+
+      - name: Start a Convex backend
+        run: |
+          set -euo pipefail
+
+          BIN_DIR="$HOME/.cache/convex-e2e"
+          BIN="$BIN_DIR/convex-local-backend"
+
+          if [ ! -x "$BIN" ]; then
+            mkdir -p "$BIN_DIR"
+            # The same artifact the Convex CLI downloads for a local deployment.
+            # Pinned rather than "latest": the suite should fail because this
+            # site changed, never because the backend did overnight.
+            URL="https://github.com/get-convex/convex-backend/releases/download/${CONVEX_BACKEND_VERSION}/convex-local-backend-x86_64-unknown-linux-gnu.zip"
+            echo "Downloading $URL"
+            curl -fsSL --retry 3 -o /tmp/convex-backend.zip "$URL"
+            unzip -q -o /tmp/convex-backend.zip -d "$BIN_DIR"
+            chmod +x "$BIN"
+          fi
+
+          STATE="$HOME/convex-e2e-state"
+          mkdir -p "$STATE/storage"
+
+          SECRET="$(openssl rand -hex 32)"
+          ADMIN_KEY="$("$BIN" keygen admin-key \
+            --instance-name "$CONVEX_INSTANCE" --instance-secret "$SECRET" | tail -1)"
+
+          cd "$STATE"
+          nohup "$BIN" \
+            --port "$CONVEX_PORT" --site-proxy-port "$CONVEX_SITE_PORT" \
+            --instance-name "$CONVEX_INSTANCE" --instance-secret "$SECRET" \
+            --local-storage storage backend.sqlite3 \
+            > "$HOME/convex-backend.log" 2>&1 &
+
+          for i in $(seq 1 60); do
+            if curl -sf "http://127.0.0.1:${CONVEX_PORT}/version" > /dev/null 2>&1; then
+              echo "Backend up after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          if ! curl -sf "http://127.0.0.1:${CONVEX_PORT}/version" > /dev/null 2>&1; then
+            echo "::error::The Convex backend never came up. Log follows."
+            cat "$HOME/convex-backend.log"
+            exit 1
+          fi
+
+          # Consumed by every later step. Never printed: it is an admin key, and
+          # it is worth exactly one ephemeral runner.
+          echo "::add-mask::$ADMIN_KEY"
+          echo "CONVEX_SELF_HOSTED_URL=http://127.0.0.1:${CONVEX_PORT}" >> "$GITHUB_ENV"
+          echo "CONVEX_SELF_HOSTED_ADMIN_KEY=$ADMIN_KEY" >> "$GITHUB_ENV"
+
+      - name: Write the suite's environment
+        run: |
+          set -euo pipefail
+
+          # .env.local, and written to a file rather than exported into the job.
+          # Four consumers have to agree on these values and it is the only name
+          # all four read: `next build` bakes NEXT_PUBLIC_CONVEX_URL into the
+          # client bundle and into the CSP derived from it, `next start` reads it
+          # at runtime, and playwright.config.ts and scripts/seed-users.mts both
+          # parse it directly. Exporting into the job environment instead builds
+          # an app with no backend URL, which serves the global error boundary on
+          # every route.
+          #
+          # CONVEX_DEPLOYMENT is deliberately absent: the Convex CLI refuses to
+          # run when it is set alongside CONVEX_SELF_HOSTED_URL.
+          #
+          # NEXT_PUBLIC_ENABLE_TEST_ROUTES opens the Playwright harness routes
+          # under app/(test) — /address-test and the rest. Their layout calls
+          # notFound() in a production build unless it is "true", and this suite
+          # drives them, so without it the three specs in
+          # address-autocomplete.spec.ts fail on a 404 that is the guard working
+          # exactly as designed. Measured on this build, both ways: 3 failed
+          # without it on `page-title` never appearing, 3 passed with it.
+          # Every client's first CI run was red on those three.
+          #
+          # It goes here and nowhere else. This file is written by the job, on
+          # the runner, for a build nobody serves; a client's own deployment
+          # never sees it, so the harness routes stay 404 in their production,
+          # which is the whole point of the guard. Setting it anywhere more
+          # durable would ship the harness with the site.
+          cat > .env.local <<EOF
+          NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:${CONVEX_PORT}
+          NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:${CONVEX_SITE_PORT}
+          CONVEX_SITE_URL=http://127.0.0.1:${CONVEX_SITE_PORT}
+          BETTER_AUTH_SECRET=$(openssl rand -hex 32)
+          BETTER_AUTH_URL=http://localhost:3000
+          ENCRYPTION_KEY=$(openssl rand -hex 32)
+          EMAIL_API_SECRET=e2e-email-api-secret-not-for-production
+          SITE_URL=http://localhost:3000
+          NEXT_PUBLIC_SITE_URL=http://localhost:3000
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          ADMIN_URL=http://localhost:3000
+          AUTH_ALLOW_UNVERIFIED_EMAIL=true
+          AWS_REGION=eu-west-3
+          AWS_ACCESS_KEY_ID=placeholder
+          AWS_SECRET_ACCESS_KEY=placeholder
+          AWS_S3_BUCKET_NAME=placeholder-bucket
+          AWS_SES_FROM_EMAIL=e2e@placeholder.invalid
+          AWS_SES_FROM_NAME="BeYours E2E"
+          AWS_SES_REPLY_TO_EMAIL=e2e@placeholder.invalid
+          OPENAI_API_KEY=sk-placeholder
+          SEED_ADMIN_EMAIL=test.owner@beindigital.fr
+          SEED_PASSWORD=e2e-seed-password-not-for-production
+          NEXT_PUBLIC_ENABLE_TEST_ROUTES=true
+          EOF
+
+          # Nothing above reaches S3, SES or OpenAI. They only have to be present
+          # and well-formed: instrumentation.ts validates the required tier at
+          # startup and refuses to serve without it.
+          echo "Wrote .env.local ($(grep -c . .env.local) values)"
+
+      - name: Build
+        # Before the Convex deploy, not after. `convex deploy` bundles convex/,
+        # which imports the @be-yours/* packages, and `pnpm start` below
+        # needs a build to serve.
+        run: pnpm build
+
+      - name: Deploy Convex functions
+        run: |
+          set -euo pipefail
+          npx convex deploy -y --typecheck disable
+
+          # Read by Convex functions, so they live on the deployment rather than
+          # in the env file above. Without the first, sign-in answers 403 and
+          # every admin test fails on an empty session.
+          npx convex env set AUTH_ALLOW_UNVERIFIED_EMAIL true
+          npx convex env set SITE_URL http://localhost:3000
+
+      - name: Seed test users
+        run: |
+          set -euo pipefail
+
+          # `pnpm start`, not `pnpm dev`: the build the previous step produced is
+          # right there, and a dev server would recompile every route on demand
+          # — including /api/auth/sign-up/email, on the seed's first request,
+          # after the readiness poll below has already declared the server up.
+          #
+          # Job control on, so the background job becomes its own process group
+          # leader and the whole tree can be killed by group below.
+          set -m
+          pnpm start &
+          SERVER_PID=$!
+
+          echo "Waiting for the server..."
+          for i in $(seq 1 60); do
+            if curl -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          # No `|| true`. The seed is idempotent — it signs existing accounts in
+          # rather than failing on them — so all a trailing `|| true` ever hid
+          # was a seed that could not run at all, and the suite then tested an
+          # empty database.
+          seed_status=0
+          npx tsx scripts/seed-users.mts || seed_status=$?
+
+          # `pnpm start` is a wrapper: the process actually holding :3000 is the
+          # `next start` it spawned, and killing the wrapper leaves it serving.
+          # Playwright then refuses to bring up its own web server with
+          # "http://localhost:3000 is already used" and the whole suite reports
+          # zero tests.
+          #
+          # Kill the process group, and use curl rather than lsof to decide
+          # whether it worked: lsof is not guaranteed on a runner, and
+          # `if lsof ...` on a missing binary exits 127, which reads as "port is
+          # free" and silently passes.
+          kill -- "-$SERVER_PID" 2>/dev/null || kill "$SERVER_PID" 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+
+          for _ in $(seq 1 20); do
+            curl -s --max-time 2 http://localhost:3000 > /dev/null 2>&1 || break
+            pkill -f "next start" 2>/dev/null || true
+            pkill -f "next-server" 2>/dev/null || true
+            sleep 1
+          done
+
+          if curl -s --max-time 2 http://localhost:3000 > /dev/null 2>&1; then
+            echo "::error::Something is still serving on port 3000 after the seed. Playwright cannot start its own server, and the run would report zero tests."
+            exit 1
+          fi
+          echo "Port 3000 is free."
+
+          if [ "$seed_status" -ne 0 ]; then
+            echo "::error::Seeding failed (exit $seed_status). The admin suite signs in as a seeded account, so running it now would report defects that are only missing fixtures."
+            exit "$seed_status"
+          fi
+
+      - name: Run Playwright tests
+        run: pnpm test:e2e
+        env:
+          CI: "true"
+
+      - name: Which engine packages this run installed
+        # Read `apps/themes/scripts/engine-versions.mjs` for what this answers
+        # and why it is the last step rather than one beside `pnpm install`.
+        #
+        # It runs in `web` too, and that is the point of it being a script. This
+        # job carries `needs: web`, so GitHub skips it whenever `web` goes red —
+        # and a stale engine version breaks Typecheck or Build long before it
+        # breaks Playwright, so the diagnostic used to be unreachable in exactly
+        # the runs that needed it (#389, P1-F5). `if: always()` is a step
+        # condition; it cannot resurrect a job that never started.
+        if: always()
+        run: node scripts/engine-versions.mjs
+
+      - name: Prove the suite actually ran
+        # Playwright exits 0 when it has nothing to run, and this config has two
+        # ways of having nothing to run that both look like success: the
+        # `hasRealBackend` spread drops the `setup` and `admin` projects when
+        # NEXT_PUBLIC_CONVEX_URL is unset or a placeholder — they are not
+        # skipped, they are never declared — and every test that signs in can
+        # self-skip when SEED_PASSWORD is empty.
+        #
+        # The floors below are measured, not guessed. This comment used to say
+        # the suite had never completed once and to keep `--min 100` until it
+        # had; it has now, on 07/09/2026, under these exact conditions —
+        # production build, local Convex backend, seeded users, CI=true, one
+        # worker:
+        #
+        #     setup     1 ran,   0 skipped
+        #     public   80 ran,   0 skipped
+        #     admin   469 ran,   8 skipped
+        #     total   550 ran,   8 skipped   (558 declared)
+        #
+        # So: ~75% of the total and ~80% of each project, which is the rule the
+        # earlier version of this comment prescribed.
+        #
+        # The headroom is not decoration. The eight skips are data-dependent —
+        # "when the inbox has one", "or empty state", "when enough items" — so
+        # their number moves with what the seed happens to produce, and a floor
+        # set at the measured count would redden a run for having seeded one
+        # fewer order. 94 admin tests of slack absorbs that and still catches
+        # what this step exists for: `admin` and `setup` vanishing entirely with
+        # the backend, or every signing-in test self-skipping without
+        # SEED_PASSWORD. Both leave counts far below these floors, not just
+        # under them.
+        #
+        # Raise them when the suite grows; a floor that never moves stops
+        # meaning anything.
+        if: always()
+        run: |
+          node scripts/assert-e2e-ran.mjs playwright-report/report.json \
+            --min 412 --projects setup:1,public:64,admin:375
+
+      - name: Upload Playwright report
+        # always(), not failure(): a run that passed over 13 of 56 spec files
+        # leaves no artifact to notice that with.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Convex backend log
+        # `tail`, not `cat`, and the bench has had it that way since it hit the
+        # same wall (.github/workflows/e2e.yml). The backend logs every HTTP
+        # request it serves, so a completed suite leaves tens of thousands of
+        # access lines; `cat` appended ~5000 of them AFTER the Playwright
+        # summary, and every reader of a job log — the Actions UI, the API,
+        # anything scripted — reads from the end. The first red run of this job
+        # (07/09/2026) could not be diagnosed from its own log for that reason.
+        # The last lines are the only ones that ever mattered anyway: a backend
+        # that died takes the suite with it and says so on the way out.
+        if: failure()
+        run: tail -100 "$HOME/convex-backend.log" || true
+
+  # One check name to require, and it tells the truth.
+  #
+  # Requiring the `e2e` job itself does not work: a job that does not run
+  # reports `skipped`, GitHub counts a skip as satisfied, and the branch would be
+  # protected by a check that passes precisely when nothing was tested. So the
+  # thing to require is an aggregate that runs unconditionally and treats every
+  # non-pass — failure, cancelled, skipped — as a failure.
+  e2e-status:
+    name: E2E Status
+    runs-on: ubuntu-latest
+    needs: [e2e]
+    if: always()
+    steps:
+      - name: Check E2E result
+        env:
+          E2E_RESULT: ${{ needs.e2e.result }}
+        run: |
+          if [ "$E2E_RESULT" = "success" ]; then
+            echo "E2E tests passed"
+            exit 0
+          fi
+          echo "::error::E2E tests did not pass (job result: $E2E_RESULT)"
+          exit 1

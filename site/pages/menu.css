@@ -1,0 +1,1803 @@
+/*
+ * menu.css — CLIENT ZONE. Kurry Up, « La Fresque ». Owner: the agent « carte » (site/ART_DIRECTION.md §2, §11).
+ *
+ * What it dresses:
+ *   A. the family colours (one pair of custom properties per family, read by every rule below)
+ *   B. /menu (app/(storefront)/menu/_components/MenuContent.tsx): the orange head, the search, the sticky
+ *      family chips, the group header with its painted number, the grid, the pagination, the empty state,
+ *      the « Une question ? » band (an ochre field) and the blog teaser
+ *   C. THE DISH CARD, wherever the engine prints it: `.storefront-menu-item` (carte, favourites),
+ *      the home's `MealCard` (inside `[data-slot="carousel-item"]`), and the site's own markup through the
+ *      `.ky-plat*` classes (for a component of site/components/*: reuse them, do not redefine them)
+ *   D. the dish sheet (components/storefront/product-detail-client.tsx), on /product/[productId] and inside
+ *      the quick-view dialog of /menu: capped photo, Bungee name on a pass of its family colour, options in
+ *      slabs, a sticky price and « Ajouter » slab
+ *
+ * Stable hooks for the other agents (do not redefine, read them):
+ *   --ky-fam           the active family's paint (chip active on /menu, or the dish's family on its sheet)
+ *   --ky-fam-titre     the colour of a large Bungee title laid on --ky-fam
+ *   --ky-fam-trace     the same family as a quiet swatch (orange families give ochre: one orange per screen)
+ *   --ky-carte-colle   where the fixed header ends (header + closed banner): the top of anything sticky
+ *   .ky-plat, .ky-plat__photo, .ky-plat__corps, .ky-plat__nom, .ky-plat__desc, .ky-plat__pied,
+ *   .ky-plat__libelle, .ky-plat__prix, .ky-plat__ajout   the card skin for the site's own markup
+ * The « formules » family (chip 2) is dressed by creation.css; it reads the same hooks.
+ *
+ * Engine facts this file stands on (checked in the DOM, 2026-11-03):
+ *   - the chips are <button>s in `section.py-12 > div.overflow-x-auto`, in the seed order: 1 Tout,
+ *     2 Formules, 3 Entrées, 4 Plats de poulet, 5 Plats d'agneau, 6 Légumes, 7 Biryanis, 8 Naans et pains,
+ *     9 Desserts, 10 Boissons. No slug in the DOM: colours go by rank. The active chip carries `bg-primary`.
+ *   - the grid is flat (no group per family): the group header is the engine's « Affichage : … (n) » h2.
+ *   - the dish sheet has no family in its DOM; its photo path does (`/brand/products/<slug>.webp`, also
+ *     inside the `/_next/image?url=` of a card). Until the photos exist the sheet falls back on orange.
+ *   - hard-coded engine copy (« Affichage : », « Trier par : », « Filtres », « Besoin d'aide pour votre
+ *     commande ? »…) is restyled here, never changed.
+ */
+
+/* ───────────────────────────── A. Family colours ───────────────────────────── */
+
+.storefront-theme {
+  --ky-carte-colle: var(--ky-entete-h);
+}
+
+/* The closed-restaurant banner (40 px, fixed) pushes the header down: the sticky row follows. */
+.storefront-theme:has(> div.fixed.top-0.h-10) {
+  --ky-carte-colle: calc(var(--ky-entete-h) + 2.5rem);
+}
+
+/* The carte: `CARTE` below is `main > div:has(> section.py-12 > div.overflow-x-auto)`. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) {
+  --ky-fam: var(--ky-orange);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+/* Active family, read from the active chip (rank = seed order). */
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:nth-child(1).bg-primary) {
+  --ky-fam: var(--ky-charbon);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:is(:nth-child(2), :nth-child(4)).bg-primary) {
+  --ky-fam: var(--ky-orange);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:is(:nth-child(3), :nth-child(10)).bg-primary) {
+  --ky-fam: var(--ky-ocre);
+  --ky-fam-titre: var(--ky-encre);
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:is(:nth-child(5), :nth-child(7)).bg-primary) {
+  --ky-fam: var(--ky-vert-champ);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-vert-champ);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:is(:nth-child(6), :nth-child(9)).bg-primary) {
+  --ky-fam: var(--ky-sauge);
+  --ky-fam-titre: var(--ky-encre);
+  --ky-fam-trace: var(--ky-sauge);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:nth-child(8).bg-primary) {
+  --ky-fam: var(--ky-charbon);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-charbon);
+}
+
+/* « Tout »: a card with no photo has no family in its DOM; its swatch takes the next coat in turn
+   (ochre, sage, green: no orange, the head already holds the screen's orange). */
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:nth-child(1).bg-primary) .storefront-menu-item:not(:has(img)):nth-child(3n + 1) {
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:nth-child(1).bg-primary) .storefront-menu-item:not(:has(img)):nth-child(3n + 2) {
+  --ky-fam-trace: var(--ky-sauge);
+}
+
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:nth-child(1).bg-primary) .storefront-menu-item:not(:has(img)):nth-child(3n) {
+  --ky-fam-trace: var(--ky-vert-champ);
+}
+
+/* The dish sheet opened from the carte (a portal, outside the carte) takes the active family too. */
+body:has(.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(3), :nth-child(10)).bg-primary) [data-slot="dialog-content"] {
+  --ky-fam: var(--ky-ocre);
+  --ky-fam-titre: var(--ky-encre);
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+body:has(.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(5), :nth-child(7)).bg-primary) [data-slot="dialog-content"] {
+  --ky-fam: var(--ky-vert-champ);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-vert-champ);
+}
+
+body:has(.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(6), :nth-child(9)).bg-primary) [data-slot="dialog-content"] {
+  --ky-fam: var(--ky-sauge);
+  --ky-fam-titre: var(--ky-encre);
+  --ky-fam-trace: var(--ky-sauge);
+}
+
+body:has(.storefront-theme section.py-12 > div.overflow-x-auto > button:nth-child(8).bg-primary) [data-slot="dialog-content"] {
+  --ky-fam: var(--ky-charbon);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-charbon);
+}
+
+/* The family read from the photo path (cards with a photo, the dish page, the dialog). Formules and
+   chicken dishes are orange, the default. The selectors list `<slug>.webp`: no slug is the tail of another. */
+.storefront-theme :is(.storefront-menu-item, .ky-plat):has(img[src*="raita.webp"], img[src*="samossa.webp"], img[src*="pakora.webp"], img[src*="poulet-tikka.webp"], img[src*="samossa-chaat.webp"], img[src*="soupe-de-lentilles.webp"], img[src*="eau-33-cl.webp"], img[src*="soda-33-cl.webp"], img[src*="the-glace-33-cl.webp"], img[src*="the-glace-50-cl.webp"], img[src*="eau-de-coco.webp"], img[src*="biere-indienne-33-cl.webp"], img[src*="the-indien.webp"], img[src*="lassi.webp"], img[src*="jus-indien-25-cl.webp"], img[src*="kombucha.webp"]),
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]):has(> div.relative.aspect-video img[src*="raita.webp"], > div.relative.aspect-video img[src*="samossa.webp"], > div.relative.aspect-video img[src*="pakora.webp"], > div.relative.aspect-video img[src*="poulet-tikka.webp"], > div.relative.aspect-video img[src*="samossa-chaat.webp"], > div.relative.aspect-video img[src*="soupe-de-lentilles.webp"], > div.relative.aspect-video img[src*="eau-33-cl.webp"], > div.relative.aspect-video img[src*="soda-33-cl.webp"], > div.relative.aspect-video img[src*="the-glace-33-cl.webp"], > div.relative.aspect-video img[src*="the-glace-50-cl.webp"], > div.relative.aspect-video img[src*="eau-de-coco.webp"], > div.relative.aspect-video img[src*="biere-indienne-33-cl.webp"], > div.relative.aspect-video img[src*="the-indien.webp"], > div.relative.aspect-video img[src*="lassi.webp"], > div.relative.aspect-video img[src*="jus-indien-25-cl.webp"], > div.relative.aspect-video img[src*="kombucha.webp"]) {
+  --ky-fam: var(--ky-ocre);
+  --ky-fam-titre: var(--ky-encre);
+  --ky-fam-trace: var(--ky-ocre);
+}
+
+.storefront-theme :is(.storefront-menu-item, .ky-plat):has(img[src*="agneau-madras.webp"], img[src*="agneau-shahi-korma.webp"], img[src*="agneau-karahi.webp"], img[src*="biryani-poulet.webp"], img[src*="biryani-legumes.webp"], img[src*="biryani-agneau.webp"], img[src*="biryani-crevettes.webp"]),
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]):has(> div.relative.aspect-video img[src*="agneau-madras.webp"], > div.relative.aspect-video img[src*="agneau-shahi-korma.webp"], > div.relative.aspect-video img[src*="agneau-karahi.webp"], > div.relative.aspect-video img[src*="biryani-poulet.webp"], > div.relative.aspect-video img[src*="biryani-legumes.webp"], > div.relative.aspect-video img[src*="biryani-agneau.webp"], > div.relative.aspect-video img[src*="biryani-crevettes.webp"]) {
+  --ky-fam: var(--ky-vert-champ);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-vert-champ);
+}
+
+.storefront-theme :is(.storefront-menu-item, .ky-plat):has(img[src*="palak-paneer.webp"], img[src*="daal-tarka.webp"], img[src*="aubergine-massala.webp"], img[src*="chana-massala.webp"], img[src*="naan-chocolat-noisette.webp"], img[src*="cookie-chocolat-au-lait.webp"], img[src*="cookie-caramel-cacahuete.webp"]),
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]):has(> div.relative.aspect-video img[src*="palak-paneer.webp"], > div.relative.aspect-video img[src*="daal-tarka.webp"], > div.relative.aspect-video img[src*="aubergine-massala.webp"], > div.relative.aspect-video img[src*="chana-massala.webp"], > div.relative.aspect-video img[src*="naan-chocolat-noisette.webp"], > div.relative.aspect-video img[src*="cookie-chocolat-au-lait.webp"], > div.relative.aspect-video img[src*="cookie-caramel-cacahuete.webp"]) {
+  --ky-fam: var(--ky-sauge);
+  --ky-fam-titre: var(--ky-encre);
+  --ky-fam-trace: var(--ky-sauge);
+}
+
+.storefront-theme :is(.storefront-menu-item, .ky-plat):has(img[src*="naan-nature.webp"], img[src*="naan-ail.webp"], img[src*="naan-fromage.webp"], img[src*="chapati.webp"], img[src*="naan-ail-fromage.webp"]),
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]):has(> div.relative.aspect-video img[src*="naan-nature.webp"], > div.relative.aspect-video img[src*="naan-ail.webp"], > div.relative.aspect-video img[src*="naan-fromage.webp"], > div.relative.aspect-video img[src*="chapati.webp"], > div.relative.aspect-video img[src*="naan-ail-fromage.webp"]) {
+  --ky-fam: var(--ky-charbon);
+  --ky-fam-titre: var(--ky-badigeon);
+  --ky-fam-trace: var(--ky-charbon);
+}
+
+/* ───────────────────────────── B. /menu ───────────────────────────── */
+
+/* B.1 The page clears the fixed header (and the closed banner) with a margin of wall, so the head's
+   brushed top edge is never hidden under the bar. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) {
+  /* The 40 px of the closed banner are always reserved: the banner arrives after the first paint and a
+     padding that followed it cost 0,36 of CLS at 1440. Open, the wall above the head is 40 px taller. */
+  padding-top: calc(var(--ky-entete-h) + 2.5rem + var(--ky-marge-passe));
+}
+
+/* B.2 The head: one full-width orange pass (the screen's only orange), the engine title in cream Bungee
+   (large text, 3,22:1), the promise in ink. The engine's blurred bubbles and rounded foot go. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child {
+  position: relative;
+  isolation: isolate;
+  margin-inline: var(--ky-marge-passe);
+  padding: clamp(2.75rem, 7vw, 5.5rem) clamp(1.25rem, 5vw, 4.5rem) clamp(2.75rem, 6vw, 5rem);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* Below 1024 px the head is taller than wide-ish and its text reaches the stroke's dry streaks on the
+   right: the calmer field brush (no streaks) takes over, the edge stays brushed and whole. */
+@media (max-width: 1023px) {
+  .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child::before {
+    mask-image: var(--ky-brosse-champ);
+    -webkit-mask-image: var(--ky-brosse-champ);
+  }
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child > div.absolute {
+  display: none;
+}
+
+/* « Notre Carte »: an eyebrow in ink with an ink dab, not a pill. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child [data-slot="badge"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: clamp(1rem, 2.5vw, 1.5rem);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  color: var(--ky-encre);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child [data-slot="badge"]::before {
+  content: "";
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child h1 {
+  margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child h1 span {
+  color: inherit;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child h1 + p {
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--ky-encre);
+}
+
+/* B.3 The search: a reading slab laid on the orange; the button is ink with a cream label (a button on
+   an orange field), brushed, not rounded. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card {
+  gap: 0.25rem;
+  padding: 0.375rem;
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card:focus-within {
+  outline: 3px solid var(--ky-encre);
+  outline-offset: 3px;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card > div:first-child {
+  padding-left: 0.75rem;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card svg {
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child input {
+  min-width: 0;
+  height: 3.25rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child input:focus-visible {
+  outline: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child input::placeholder {
+  color: var(--ky-texte-2);
+  opacity: 1;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child [data-slot="button"] {
+  position: relative;
+  isolation: isolate;
+  height: 3.25rem;
+  padding-inline: clamp(1rem, 3vw, 1.75rem);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-badigeon);
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child [data-slot="button"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child [data-slot="button"]:hover::before {
+  background: var(--ky-encre-2);
+}
+
+/* On a phone the field and the button do not fit on one line (the placeholder « Rechercher un plat… » was cut
+   at 375 px): the button goes under the field, full width. */
+@media (max-width: 479.98px) {
+  .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card {
+    flex-wrap: wrap;
+    row-gap: 0.375rem;
+  }
+
+  .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child input {
+    flex: 1 1 0%;
+  }
+
+  .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card > [data-slot="button"] {
+    flex: 1 0 100%;
+  }
+}
+
+/* The clear-search cross: a 44 px target, no frame. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child div.bg-card > button[type="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--ky-texte-2);
+}
+
+/* B.4 The family chips: a sticky row on the wall. Each chip is a brush stroke of its family colour,
+   a light trace (25 %) until it is the active one, then fully painted. No border, no pill. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.py-12 {
+  padding-top: clamp(1.25rem, 3vw, 2.25rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  text-transform: none;
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto:has(> button) {
+  position: sticky;
+  top: var(--ky-carte-colle);
+  z-index: 20;
+  justify-content: safe center;
+  gap: 0.375rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  background-color: hsl(var(--background));
+  background-image: var(--ky-grain);
+  background-size: 240px 240px;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 1.5rem;
+  scrollbar-width: none;
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button {
+  --ky-puce: var(--ky-charbon);
+  --ky-puce-texte: var(--ky-badigeon);
+  position: relative;
+  isolation: isolate;
+  height: 48px;
+  gap: 0;
+  padding: 0 1.15rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-texte);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  transition: color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button::before {
+  content: "";
+  position: absolute;
+  inset: 3px 0;
+  z-index: -1;
+  background: var(--ky-puce);
+  opacity: 0.25;
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: opacity var(--ky-t-couche) var(--ky-ease-couche);
+  pointer-events: none;
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button:hover::before {
+  opacity: 0.38;
+}
+
+.dark .storefront-theme section.py-12 > div.overflow-x-auto > button::before {
+  opacity: 0.4;
+}
+
+.dark .storefront-theme section.py-12 > div.overflow-x-auto > button:hover::before {
+  opacity: 0.55;
+}
+
+/* On the green wall, a green or charcoal trace at 40 % would vanish: those two take a thicker coat. */
+.dark .storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(1), :nth-child(5), :nth-child(7), :nth-child(8))::before {
+  opacity: 0.8;
+}
+
+.dark .storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(1), :nth-child(5), :nth-child(7), :nth-child(8)):hover::before {
+  opacity: 1;
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button.bg-primary {
+  color: var(--ky-puce-texte);
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button.bg-primary::before,
+.dark .storefront-theme section.py-12 > div.overflow-x-auto > button.bg-primary::before {
+  opacity: 1;
+}
+
+/* The emoji of « Tout » goes: the chip is a word on a stroke. */
+.storefront-theme section.py-12 > div.overflow-x-auto > button > span {
+  display: none;
+}
+
+/* Swatches by rank: Tout charbon, Formules orange, Entrées ocre, Plats poulet orange, Plats agneau vert,
+   Légumes sauge, Biryanis vert, Naans charbon (cream letters), Desserts sauge, Boissons ocre. */
+.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(2), :nth-child(4)) {
+  --ky-puce: var(--ky-orange);
+  --ky-puce-texte: var(--ky-encre);
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(3), :nth-child(10)) {
+  --ky-puce: var(--ky-ocre);
+  --ky-puce-texte: var(--ky-encre);
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(5), :nth-child(7)) {
+  --ky-puce: var(--ky-vert-champ);
+  --ky-puce-texte: var(--ky-badigeon);
+}
+
+.storefront-theme section.py-12 > div.overflow-x-auto > button:is(:nth-child(6), :nth-child(9)) {
+  --ky-puce: var(--ky-sauge);
+  --ky-puce-texte: var(--ky-encre);
+}
+
+/* B.5 The group header: « Affichage : » in small capitals, the family name in Bungee on a pass of its
+   colour, the number of dishes as a painted number (decorative: the engine says it to screen readers). */
+.storefront-theme section.py-12 > div.justify-between:has(> div > h2) {
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+  margin-bottom: clamp(1.5rem, 3.5vw, 2.75rem);
+  padding-inline: 0;
+}
+
+.storefront-theme section.py-12 > div.justify-between > div > h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.85rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme section.py-12 > div.justify-between > div > h2 > span:not([aria-hidden]) {
+  order: 1;
+  position: relative;
+  isolation: isolate;
+  padding: 0.2em 0.6em 0.14em;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  color: var(--ky-fam-titre);
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme section.py-12 > div.justify-between > div > h2 > span:not([aria-hidden])::before {
+  content: "";
+  position: absolute;
+  inset: 0 -14% 0 0;
+  z-index: -1;
+  background: var(--ky-fam);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme section.py-12 > div.justify-between > div > h2 > span[aria-hidden] {
+  order: -1;
+  margin: 0 0.1em 0 0;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-orange);
+}
+
+/* Under 640 px the family name always starts its own row. Before the dishes arrive the engine prints
+   « (0) », short enough for « Affichage : Tout » to share one row; « (44) » then broke it in two and the
+   buttons below jumped twice (CLS 0,05 + 0,05 at 375 under Fast 4G + CPU x4). A zero-height break keeps
+   one layout from the first paint. */
+.storefront-theme section.py-12 > div.justify-between > div > h2::after {
+  content: "";
+  order: 0;
+  flex: 0 0 100%;
+  height: 0;
+  margin-top: -0.25rem;
+}
+
+/* From 640 px: the painted number holds two rows, the label above the family name. */
+@media (min-width: 640px) {
+  .storefront-theme section.py-12 > div.justify-between > div > h2 {
+    display: grid;
+    grid-template-columns: auto minmax(0, auto);
+    grid-template-areas: "n l" "n f";
+    justify-content: start;
+    align-items: end;
+    gap: 0.4rem 1rem;
+  }
+
+  .storefront-theme section.py-12 > div.justify-between > div > h2 > span[aria-hidden] {
+    grid-area: n;
+    align-self: center;
+  }
+
+  .storefront-theme section.py-12 > div.justify-between > div > h2 > span:not([aria-hidden]) {
+    grid-area: f;
+    justify-self: start;
+  }
+
+  .storefront-theme section.py-12 > div.justify-between > div > h2::after {
+    content: none;
+  }
+}
+
+.storefront-theme section.py-12 > div.justify-between > div:first-child {
+  min-width: 0;
+}
+
+/* Filters and sort: two small slabs, no outline. The next coat on hover. */
+.storefront-theme section.py-12 > div.justify-between > div:last-child {
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme section.py-12 > div.justify-between:has(> div > h2) {
+    align-items: flex-end;
+  }
+
+  .storefront-theme section.py-12 > div.justify-between > div:last-child {
+    flex-wrap: nowrap;
+  }
+}
+
+.storefront-theme section.py-12 > div.justify-between > div:last-child > button {
+  height: 44px;
+  gap: 0.5rem;
+  padding-inline: 0.85rem;
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  box-shadow: var(--ky-ombre-courte);
+  color: var(--ky-texte);
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme section.py-12 > div.justify-between > div:last-child > button:hover {
+  background: var(--ky-peche);
+  color: var(--ky-charbon);
+}
+
+.dark .storefront-theme section.py-12 > div.justify-between > div:last-child > button:hover {
+  background: var(--ky-vert);
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme section.py-12 > div.justify-between > div:last-child > button > span:not([data-slot]) {
+  color: var(--ky-mot);
+}
+
+.dark .storefront-theme section.py-12 > div.justify-between > div:last-child > button:hover > span:not([data-slot]) {
+  color: var(--ky-orange-clair);
+}
+
+.storefront-theme section.py-12 > div.justify-between > div:last-child > button:hover > span:not([data-slot]) {
+  color: var(--ky-brique);
+}
+
+/* « Disponible » (the availability filter on): the accent coat. */
+.storefront-theme section.py-12 > div.justify-between > div:last-child > button.bg-accent {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.storefront-theme section.py-12 > div.justify-between [data-slot="badge"] {
+  color: var(--ky-encre);
+}
+
+/* B.6 The grid: 1, 2, 3, then 4 columns; the card skin is section C. */
+.storefront-theme .storefront-menu {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+@media (min-width: 640px) {
+  .storefront-theme .storefront-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme .storefront-menu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-theme .storefront-menu {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* The loading cards: cream slabs too, no border. */
+.storefront-theme section.py-12 > div.mb-8 > div.grid:not(.storefront-menu) {
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.storefront-theme section.py-12 > div.mb-8 > div.grid:not(.storefront-menu) > div {
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+/* B.7 Empty result: a sage dab behind the magnifier, the line in Bungee, the hint in Mukta. */
+.storefront-theme section.py-12 [data-slot="empty"] {
+  padding-block: clamp(3rem, 8vw, 6rem);
+  border: 0;
+  text-transform: none;
+}
+
+.storefront-theme section.py-12 [data-slot="empty-icon"] {
+  position: relative;
+  isolation: isolate;
+  width: 5.5rem;
+  height: 3.25rem;
+  margin-bottom: 1rem;
+  background: transparent;
+  border-radius: 0;
+  color: var(--ky-encre);
+}
+
+.storefront-theme section.py-12 [data-slot="empty-icon"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme section.py-12 [data-slot="empty-icon"] svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.storefront-theme section.py-12 [data-slot="empty-title"] {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-texte);
+}
+
+.storefront-theme section.py-12 [data-slot="empty-description"] {
+  max-width: 40ch;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--ky-texte-2);
+}
+
+/* B.8 Pagination: no sheet around it; pages are words, the current one on an orange stroke. */
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button) {
+  position: relative;
+  isolation: isolate;
+  min-width: 48px;
+  height: 48px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-texte);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button)::before {
+  content: "";
+  position: absolute;
+  inset: 4px 0;
+  z-index: -1;
+  background: var(--ky-sol-charge);
+  opacity: 0;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: opacity var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button):hover {
+  background: transparent;
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button):hover::before {
+  opacity: 1;
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button)[aria-current="page"] {
+  color: var(--ky-encre);
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button)[aria-current="page"]::before {
+  background: var(--ky-orange);
+  opacity: 1;
+}
+
+.storefront-theme section.py-12 > div:has(> nav[aria-label]) :is(a, button)[aria-current="page"]:hover::before {
+  background: var(--ky-orange-vif);
+}
+
+/* B.9 « Une question ? »: the engine's orange card becomes an ochre field (the promise colour), ink
+   letters, the engine's « Contactez-nous » an ink brushed button with a cream label. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section:has(> div.bg-primary) {
+  padding-inline: 0;
+  padding-block: clamp(2rem, 5vw, 4rem);
+  max-width: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary {
+  position: relative;
+  isolation: isolate;
+  max-width: 1240px;
+  margin-inline: max(var(--ky-marge-passe), calc((100% - 1240px) / 2));
+  padding: clamp(2.75rem, 6vw, 5.5rem) clamp(1.5rem, 6vw, 5rem);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary > div.absolute {
+  display: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="badge"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  backdrop-filter: none;
+  color: var(--ky-encre);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="badge"]::before {
+  content: "";
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary h2 {
+  font-size: clamp(2.25rem, 5vw, 4.25rem);
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary h2 span {
+  color: inherit;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary p {
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  color: var(--ky-encre-2);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="button"] {
+  position: relative;
+  isolation: isolate;
+  height: 3.5rem;
+  padding-inline: 2rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-badigeon);
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  scale: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="button"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="button"]:hover {
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="button"]:hover::before {
+  background: var(--ky-encre-2);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary [data-slot="button"] svg {
+  translate: none;
+}
+
+/* B.10 The blog teaser (when articles exist): no sheet around it, the posts as cream slabs. */
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card {
+  padding-top: clamp(1.5rem, 4vw, 3rem);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-transform: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card h2 {
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  text-transform: uppercase;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card h2 span {
+  color: var(--ky-mot);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card h2 + div {
+  height: 0.6rem;
+  background: var(--ky-ocre);
+  border-radius: 0;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group > div {
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group:is(:hover, :focus-visible) > div {
+  background: var(--ky-peche);
+}
+
+.dark .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group:is(:hover, :focus-visible) > div {
+  background: var(--ky-vert);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group > div > div:first-child {
+  margin: 0.75rem 0.75rem 0;
+  border-radius: var(--ky-r-photo);
+  max-height: var(--ky-cap-plat);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group img {
+  scale: none;
+  transform: none;
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group > div > div:first-child > div.absolute {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-dalle-claire);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group > div > div:first-child > div.absolute p {
+  color: var(--ky-brique);
+}
+
+.storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-card a.group h3 {
+  letter-spacing: 0;
+  color: var(--ky-texte);
+}
+
+/* ───────────────────────────── C. The dish card (everywhere) ───────────────────────────── */
+
+/* A cream slab on the wall, soft shadow, no border; the photo sits INSIDE it with a 12 px margin and its
+   own corners; on hover the slab takes the next coat (pêche, green in dark): no lift, no zoom. */
+.storefront-theme :is(.storefront-menu-item, .ky-plat, [data-slot="carousel-item"] > .group:has(> div.aspect-\[4\/3\])) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ky-dalle);
+  color: var(--ky-texte);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  overflow: clip;
+  translate: none;
+  text-transform: none;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+/* framer-motion writes `transform` in line on the home's MealCard (whileHover y: -10). */
+.storefront-theme [data-slot="carousel-item"] > .group:has(> div.aspect-\[4\/3\]) {
+  transform: none !important;
+}
+
+.storefront-theme :is(.storefront-menu-item, .ky-plat, [data-slot="carousel-item"] > .group:has(> div.aspect-\[4\/3\])):is(:hover, :focus-within) {
+  background: var(--ky-peche);
+}
+
+.dark .storefront-theme :is(.storefront-menu-item, .ky-plat, [data-slot="carousel-item"] > .group:has(> div.aspect-\[4\/3\])):is(:hover, :focus-within) {
+  background: var(--ky-vert);
+}
+
+/* The photo box: 4/3, capped (.ky-cap--plat), corners inside the slab. */
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]) {
+  position: relative;
+  flex: none;
+  margin: 0.75rem 0.75rem 0;
+  aspect-ratio: 4 / 3;
+  max-height: var(--ky-cap-plat);
+  /* the cream wash in both modes: the packshots stand on cream, and a swatch reads on it in dark too */
+  background: var(--ky-chaux);
+  border-radius: var(--ky-r-photo);
+  overflow: clip;
+  view-timeline: --ky-plat block;
+}
+
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]) img {
+  object-fit: cover;
+  scale: none;
+  transform: none;
+  transition: none;
+}
+
+/* No photo yet: the box is a paint swatch of the family (two coats of the brush), never an icon. */
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img)) > div:not(.absolute) > svg {
+  display: none;
+}
+
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img))::before,
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img))::after {
+  content: "";
+  position: absolute;
+  background: var(--ky-fam-trace, var(--ky-ocre));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img))::before {
+  inset: 30% 9% 36% 9%;
+}
+
+.storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img))::after {
+  inset: 60% 30% 22% 16%;
+  opacity: 0.55;
+  transform: scaleX(-1);
+}
+
+/* « Populaire », « Indisponible », « Autre restaurant »: a matt cream label, no blur. */
+.storefront-theme :is(.storefront-menu-photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]) > div.absolute.left-4 {
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1;
+}
+
+.storefront-theme :is(.storefront-menu-photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]) > div.absolute.left-4 > * {
+  padding: 0.35rem 0.6rem;
+  background: var(--ky-dalle-claire);
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  box-shadow: none;
+  backdrop-filter: none;
+  color: var(--ky-charbon);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* The favourite heart: a disc of the slab's colour, 44 px, no border, no shadow, no zoom. */
+.storefront-theme :is(.storefront-menu-fav, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\] > div.absolute.right-4 button) {
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 44px;
+  height: 44px;
+  background: var(--ky-dalle);
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  scale: none;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\] > div.absolute.right-4 {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.storefront-theme :is(.storefront-menu-fav, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\] > div.absolute.right-4 button) svg {
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme :is(.storefront-menu-fav, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\] > div.absolute.right-4 button)[aria-pressed="true"] svg {
+  color: var(--ky-mot);
+  fill: currentColor;
+}
+
+/* An unavailable dish: a veil of wall, not of white. */
+.storefront-theme .storefront-menu-photo > div.absolute.inset-0 {
+  background: hsl(var(--background) / 0.5);
+}
+
+/* The body: name, line, price and add. */
+.storefront-theme :is(.storefront-menu-body, .ky-plat__corps, [data-slot="carousel-item"] > .group > div.p-8) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.storefront-theme :is(.storefront-menu-name, .ky-plat__nom, [data-slot="carousel-item"] > .group > div.p-8 > h3) {
+  margin-bottom: 0.375rem;
+}
+
+.storefront-theme :is(.storefront-menu-name > *, .ky-plat__nom, [data-slot="carousel-item"] > .group > div.p-8 > h3) {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-style: normal;
+  font-size: 1.1875rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ky-texte);
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.storefront-theme .storefront-menu-item:hover .storefront-menu-name > *,
+.storefront-theme [data-slot="carousel-item"] > .group:hover > div.p-8 > h3 {
+  color: var(--ky-texte);
+}
+
+.storefront-theme :is(.storefront-menu-desc, .ky-plat__desc) {
+  margin-bottom: 1rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  text-transform: none;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme :is(.storefront-menu-foot, .ky-plat__pied, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto) {
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+/* « Prix »: small capitals behind a dab of the family colour (the card's only hint of its family). */
+.storefront-theme :is(.storefront-menu-price > span:first-child, .ky-plat__libelle, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > div > span:first-child) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.4rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme :is(.storefront-menu-price > span:first-child, .ky-plat__libelle, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > div > span:first-child)::before {
+  content: "";
+  flex: none;
+  width: 1.25rem;
+  height: 0.5rem;
+  background: var(--ky-fam-trace, var(--ky-ocre));
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme :is(.storefront-menu-price > span:nth-child(2), .ky-plat__prix, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > div > span:nth-child(2)) {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1.375rem;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ky-texte);
+}
+
+.storefront-theme .storefront-menu-price > span:nth-child(3) {
+  color: var(--ky-texte-2);
+}
+
+/* « + »: the brand orange with an ink cross, on a short brush dab (corners « rognés à la brosse »).
+   The orange-vif coat on hover; no zoom. */
+.storefront-theme :is(button.storefront-menu-add, .ky-plat__ajout, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > [data-slot="button"]) {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  scale: none;
+  color: var(--ky-encre);
+}
+
+.storefront-theme :is(button.storefront-menu-add, .ky-plat__ajout, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > [data-slot="button"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme :is(button.storefront-menu-add, .ky-plat__ajout, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > [data-slot="button"]):hover {
+  background: transparent;
+}
+
+.storefront-theme :is(button.storefront-menu-add, .ky-plat__ajout, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > [data-slot="button"]):hover::before {
+  background: var(--ky-orange-vif);
+}
+
+.storefront-theme :is(button.storefront-menu-add, .ky-plat__ajout, [data-slot="carousel-item"] > .group > div.p-8 > div.mt-auto > [data-slot="button"]) svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2.5;
+}
+
+/* The add that cannot be pressed (closed, unavailable): a dab of wash, a grey cross. */
+.storefront-theme div.storefront-menu-add {
+  position: relative;
+  isolation: isolate;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border-radius: 0;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme div.storefront-menu-add::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-sol-charge);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* ───────────────────────────── D. The dish sheet ───────────────────────────── */
+
+/* `FICHE` = the page `main:has(> div.relative.aspect-video)` and the dialog
+   `[data-slot="dialog-content"]:has(> div.relative.aspect-video)`. Same component in both. */
+
+/* D.1 The page: clears the header, two columns from 1024 px (photo held still on the left). */
+.storefront-theme main:has(> div.relative.aspect-video.w-full.bg-muted) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  width: var(--ky-wrap);
+  margin-inline: auto;
+  /* Same reserve as the carte (B.1): the closed banner's 40 px are held from the first paint. */
+  padding-top: calc(var(--ky-entete-h) + 2.5rem + clamp(1rem, 3vw, 2rem));
+  padding-bottom: clamp(3rem, 7vw, 6rem);
+}
+
+/* While the dish loads, the engine's skeleton (`div.container > div.grid > .animate-pulse.aspect-square`)
+   sits in a full-width `main`; the sheet then narrowed `main` to the wrap and moved it (CLS 0,07 at
+   1440, 0,02 at 375). Same width from the first paint. The height is held in shared.css §1. */
+.storefront-theme main:has(> div.container > div.grid > .animate-pulse.aspect-square) {
+  width: var(--ky-wrap);
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main:has(> div.relative.aspect-video.w-full.bg-muted) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: start;
+  }
+
+  .storefront-theme main:has(> div.relative.aspect-video.w-full.bg-muted) > div.relative.aspect-video {
+    grid-column: 1;
+    grid-row: 1;
+    position: sticky;
+    top: calc(var(--ky-carte-colle) + 1.5rem);
+  }
+
+  .storefront-theme main:has(> div.relative.aspect-video.w-full.bg-muted) > div.overflow-x-auto {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .storefront-theme main:has(> div.relative.aspect-video.w-full.bg-muted) > div.p-10 {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+}
+
+/* The dialog is a grid: without this its column grows to its widest child on a phone (the sheet ran off
+   the right edge, the heart and the « Ajouter » slab cut). */
+.storefront-theme[data-slot="dialog-content"]:has(> div.relative.aspect-video) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* D.2 The photo: 4/3, capped (.ky-cap: never a phone or tablet screen), corners inside. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video {
+  aspect-ratio: 4 / 3;
+  height: auto;
+  max-height: var(--ky-cap-scene);
+  background: var(--ky-chaux);
+  border-radius: var(--ky-r-photo);
+  overflow: clip;
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.relative.aspect-video {
+  width: calc(100% - 1.5rem);
+  aspect-ratio: 16 / 9;
+  max-height: var(--ky-cap-plat);
+  margin: 0.75rem 0.75rem 0;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > img {
+  object-fit: cover;
+}
+
+/* No photo yet: the same swatch as the cards, larger. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video:not(:has(img)) > div:first-child > svg {
+  display: none;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video:not(:has(img))::before,
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video:not(:has(img))::after {
+  content: "";
+  position: absolute;
+  background: var(--ky-fam-trace, var(--ky-ocre));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video:not(:has(img))::before {
+  inset: 32% 10% 38% 10%;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video:not(:has(img))::after {
+  inset: 60% 32% 24% 16%;
+  opacity: 0.55;
+  transform: scaleX(-1);
+}
+
+/* Labels and heart on the photo: same as the card. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.left-6 {
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.left-6 > span {
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--ky-r-ctrl);
+  box-shadow: none;
+  backdrop-filter: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.left-6 > span.bg-card\/90 {
+  background: var(--ky-dalle-claire);
+  color: var(--ky-charbon);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.right-6 {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.relative.aspect-video > div.absolute.right-6 {
+  right: 3.5rem;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.right-6 > button {
+  width: 44px;
+  height: 44px;
+  background: var(--ky-dalle);
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  scale: none;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.right-6 > button svg {
+  color: var(--ky-texte-2);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.relative.aspect-video > div.absolute.right-6 > button[aria-pressed="true"] svg {
+  color: var(--ky-mot);
+  fill: currentColor;
+}
+
+/* Other photos: thumbnails without a frame, the current one on an ochre dab under it. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.overflow-x-auto[role="group"] {
+  padding: 0.75rem 0 0;
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.overflow-x-auto[role="group"] {
+  padding-inline: 0.75rem;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.overflow-x-auto[role="group"] > button {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.overflow-x-auto[role="group"] > button[aria-current="true"] {
+  outline: 3px solid var(--ky-ocre);
+  outline-offset: -3px;
+}
+
+/* D.3 The content column. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10.space-y-6 {
+  padding: clamp(1.5rem, 4vw, 2rem) 0 0;
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.p-10.space-y-6 {
+  padding: 1.25rem clamp(1rem, 4vw, 2rem) 0;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div.p-10.space-y-6 {
+    padding-top: 0;
+  }
+}
+
+/* The name: Bungee, on a pass of its family colour (painted at load). */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-4 > h2 {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  max-width: 86%;
+  margin-left: -0.15em;
+  padding: 0.2em 0.55em 0.14em;
+  font-size: clamp(2.25rem, 4.6vw, 4rem);
+  line-height: 1.08; /* capital accents clear the row above (shared.css §2) */
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-fam-titre, var(--ky-badigeon));
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.p-10 > div.space-y-4 > h2 {
+  font-size: clamp(2rem, 6vw, 2.75rem);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-4 > h2::before {
+  content: "";
+  position: absolute;
+  /* the stroke runs 16 % past the last letter: its dry streaks never cross a word */
+  inset: 0 -16% 0 0;
+  z-index: -1;
+  background: var(--ky-fam, var(--ky-orange));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-4 > h2 + p {
+  max-width: 52ch;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+/* Empty allergen row takes no room. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-4 > div.flex-wrap:empty {
+  display: none;
+}
+
+/* D.4 Options: each group is a cream slab; its choices are washes that take the pêche coat when chosen. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 {
+  display: grid;
+  gap: 0.875rem;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 > div {
+  margin: 0;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  background: var(--ky-dalle);
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 > div > :first-child {
+  margin-bottom: 0.875rem;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 > div > :last-child {
+  margin-top: 0;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 label[id] {
+  gap: 0.6rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  color: var(--ky-texte);
+}
+
+/* « Requis »: a word on the wash, not a pink pill. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 label[id] > span {
+  padding: 0.2rem 0.45rem;
+  background: var(--ky-sol-charge);
+  border-radius: var(--ky-r-ctrl);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--ky-mot);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 label[id] + p {
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--ky-texte-2);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] {
+  gap: 0.5rem;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label {
+  min-height: 48px;
+  padding: 0.65rem 0.9rem;
+  background: var(--ky-sol-charge);
+  border: 0;
+  border-radius: var(--ky-r-photo);
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label:is(:hover, .bg-accent) {
+  background: var(--ky-peche);
+}
+
+.dark :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label:is(:hover, .bg-accent) {
+  background: var(--ky-vert-champ);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label:has(:focus-visible) {
+  outline: 3px solid var(--ky-focus);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* The marker: the control keeps its boundary (≥ 3:1), orange once chosen. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label span.border-2 {
+  border-color: hsl(var(--input));
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label span.border-2.bg-primary {
+  border-color: var(--ky-orange);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label span.font-bold {
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--ky-texte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label.bg-accent span.font-bold {
+  font-weight: 800;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10 [role] > label > span:last-child {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-mot);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > [data-orientation] {
+  display: none;
+}
+
+/* D.5 The price and « Ajouter »: a slab that stays at the bottom of the screen while the options scroll,
+   the total in large Mukta, the button orange with ink label on a brush dab. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 5;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+  background: var(--ky-dalle);
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre);
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.p-10 > div.pt-6:last-child {
+  margin-bottom: 0.75rem;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:first-child > span:first-child {
+  margin-bottom: 0.35rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  color: var(--ky-texte-2);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:first-child > span:nth-child(2) {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ky-texte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > div {
+  height: 52px;
+  padding: 0.25rem;
+  background: var(--ky-sol-charge);
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > div > button {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ky-r-ctrl);
+  color: var(--ky-texte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > div > button:hover {
+  background: var(--ky-dalle);
+  color: var(--ky-texte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > div > div {
+  width: 2.5rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-texte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > button {
+  position: relative;
+  isolation: isolate;
+  height: 52px;
+  padding-inline: 1.5rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-encre);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > button:not(:disabled):hover::before {
+  background: var(--ky-orange-vif);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > button:disabled {
+  color: var(--ky-texte-2);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > button:disabled::before {
+  background: var(--ky-sol-charge);
+}
+
+@media (max-width: 639px) {
+  :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child {
+    padding-left: 1rem;
+  }
+
+  :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child {
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.pt-6:last-child > div:last-child > button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* ───────────────────────────── E. Motion ───────────────────────────── */
+
+/* Default = final state (everything painted, in place). Motion only below. */
+@media (prefers-reduced-motion: no-preference) {
+  /* The head's orange pass is painted at load; the title lines arrive. */
+  .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 0ms both;
+  }
+
+  .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section.bg-primary:first-child h1 {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) 120ms both;
+  }
+
+  /* The dish name's pass is painted at load. */
+  :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-4 > h2::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 150ms both;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The group name's pass, painted as it enters (already painted when it is on screen at load). */
+    .storefront-theme section.py-12 > div.justify-between > div > h2 > span:not([aria-hidden])::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-passe;
+      animation-range: entry 10% entry 55%;
+    }
+
+    /* Cards arrive in a short jet, column by column. */
+    .storefront-theme .storefront-menu > .storefront-menu-item {
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: view();
+      animation-range: entry 0% entry 32%;
+    }
+
+    .storefront-theme .storefront-menu > .storefront-menu-item:nth-child(4n + 2) {
+      animation-range: entry 4% entry 36%;
+    }
+
+    .storefront-theme .storefront-menu > .storefront-menu-item:nth-child(4n + 3) {
+      animation-range: entry 8% entry 40%;
+    }
+
+    .storefront-theme .storefront-menu > .storefront-menu-item:nth-child(4n) {
+      animation-range: entry 12% entry 44%;
+    }
+
+    /* A swatch paints itself as its card enters. */
+    .storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img))::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-plat;
+      animation-range: entry 20% entry 80%;
+    }
+
+    .storefront-theme :is(.storefront-menu-photo, .ky-plat__photo, [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\]):not(:has(img))::after {
+      animation: ky-peint-droite linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-plat;
+      animation-range: entry 45% cover 50%;
+    }
+
+    /* « Une question ? »: the ochre field is painted as it enters. */
+    .storefront-theme main > div:has(> section.py-12 > div.overflow-x-auto) > section > div.bg-primary::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-passe;
+      animation-range: entry 0% entry 40%;
+    }
+
+    /* Option slabs of a dish arrive one after the other. */
+    .storefront-theme main > div.p-10 > div.space-y-10 > div {
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: view();
+      animation-range: entry 0% entry 30%;
+    }
+  }
+}

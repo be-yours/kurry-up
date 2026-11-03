@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:49:25.524Z",
+  "modality": "image",
+  "prompt": "A contact sheet of six separate photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial photography look, real colours. Everything is completely unbranded: bottles and cans are plain, with NO label, NO print, NO writing, NO logo, plain metal caps. The reference image only shows the look of the light and realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) a 33 cl clear glass bottle of still water, no label, beside a plain tumbler of water; (2) a 33 cl clear glass bottle of orange soda with no label and a glass with ice; (3) iced tea in a medium tall glass with ice cubes and a lemon slice, a green mint leaf; (4) iced tea in a larger tall glass (clearly bigger than the previous one) with ice cubes, lemon slices and mint; (5) an amber glass beer bottle with no label and a tall glass of golden lager with a white foam head; (6) three tiny steel bowls of chutneys: green mint-coriander, red tomato-chilli, and brown tamarind, with a few naan pieces beside. Absolutely no text, no letters, no logos, no printed packaging, no labels, no hands, no people. Original images, not copies of any brand's photos.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "A contact sheet of six separate photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial photography look, real colours. Everything is completely unbranded: bottles and cans are plain, with NO label, NO print, NO writing, NO logo, plain metal caps. The reference image only shows the look of the light and realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) a 33 cl clear glass bottle of still water, no label, beside a plain tumbler of water; (2) a 33 cl clear glass bottle of orange soda with no label and a glass with ice; (3) iced tea in a medium tall glass with ice cubes and a lemon slice, a green mint leaf; (4) iced tea in a larger tall glass (clearly bigger than the previous one) with ice cubes, lemon slices and mint; (5) an amber glass beer bottle with no label and a tall glass of golden lager with a white foam head; (6) three tiny steel bowls of chutneys: green mint-coriander, red tomato-chilli, and brown tamarind, with a few naan pieces beside. Absolutely no text, no letters, no logos, no printed packaging, no labels, no hands, no people. Original images, not copies of any brand's photos.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2304x1536",
+    "count": 1,
+    "referenceImages": 1
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/sheet-8/20261103-104925-image-a-contact-sheet-of-six-separate-photogra.png",
+      "mediaType": "image/png",
+      "bytes": 3340407
+    }
+  ]
+}

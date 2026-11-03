@@ -1,0 +1,1440 @@
+@import "tailwindcss";
+
+/*
+ * The engine packages are Tailwind sources too.
+ *
+ * Tailwind v4 auto-detects the app's own files and stops there: anything used
+ * only inside `packages/ui` or `packages/admin` produced no CSS at all. The
+ * classes were in the markup and no rule ever matched them — `max-h-[85vh]` on
+ * the promotion dialog, `max-h-[60vh]` on its scrolling form, `min-h-[50vh]` on
+ * the store guard. That dialog rendered 1549px tall in a 720px window with its
+ * actions off screen, which is not a styling nicety: the form could not be
+ * submitted.
+ *
+ * WHY `node_modules` AND NOT `../../../packages`, which is what these two lines
+ * said until the same bug came back: this file ships verbatim to
+ * `beyours-boilerplate`, the repository a client site is cloned from, where
+ * this app IS the repository root. `../../../packages` then resolves ABOVE that
+ * root and matches nothing, and Tailwind reports no error for a source glob
+ * that hits no files — so the monorepo built 3102 rules and every client built
+ * 2526 of them, with `max-h-[60vh]` and `min-h-[50vh]` among the 576 missing.
+ * The bug was invisible here and live on every site we had sold.
+ *
+ * `node_modules/@be-yours/*` is the one spelling that resolves in both
+ * layouts: pnpm links it to `packages/*` inside this workspace, and it is the
+ * installed package on a client site — where both packages ship `src` in their
+ * `files`. `scripts/check-mirror-css.mjs` builds the stylesheet in both layouts
+ * on every pull request and fails if they ever stop matching.
+ *
+ * The globs end in `**\/*` rather than `**\/*.{ts,tsx}` so that they cover a
+ * package's source the way Tailwind's own detection covers this app's: with no
+ * opinion about the extension. A `.jsx` under `packages/ui/src` used to produce
+ * no CSS while the identical file under `app/` produced it fine, and the two
+ * builds agreed on the wrong answer.
+ */
+@source "../node_modules/@be-yours/ui/src/**/*";
+@source "../node_modules/@be-yours/admin/src/**/*";
+@import "../node_modules/tw-animate-css/dist/tw-animate.css";
+
+/*
+ * Article typography, for the HTML the CMS and the blog store.
+ *
+ * `prose` was already spelled on the blog preview and it did nothing: the
+ * plugin that defines it was never installed, so an article's <h2>, <p> and
+ * <ul> came out with Tailwind's preflight reset still on them — no margins, no
+ * heading sizes, no bullets. It read as one wall of text. The public
+ * `/blog/[slug]` page renders the same stored markup, so it needed the same
+ * plugin rather than a second set of hand-written rules.
+ */
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 224 71% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+    /*
+     * 37%, not 53%. `#f97015` measures 2.85:1 against white and 2.60:1 against
+     * `--muted` — so `text-primary` could not be read on any surface in the
+     * product, and `bg-primary` could not carry a white label either (2.85:1,
+     * which `branding.ts` has documented as below AA since it was written).
+     * `--primary` is used BOTH ways — 217 `bg-primary` and 77 `text-primary` in
+     * the two apps and the two UI packages — so the colour itself has to clear
+     * 4.5:1 against the light surfaces, and 37% is the first lightness that
+     * does (4.68:1 on `--muted`, the darkest of them; 5.88:1 for a white label
+     * on it). Deeper orange, same hue, same white-on-orange design language.
+     * See #410.
+     */
+    --primary: 24 95% 37%;
+    --primary-foreground: 0 0% 100%;
+    /*
+     * The brand colour a WORD can be written in, as opposed to the one a
+     * BUTTON is filled with. They are the same value here only because the
+     * fill was darkened; under an establishment's own branding they part
+     * company — `buildBrandingCss` writes `--primary` as the colour the owner
+     * picked and derives this one by walking the same hue until it can be read
+     * on the page. `text-primary-ink`, never `text-primary`, for a word.
+     */
+    --primary-ink: 24 95% 37%;
+    /*
+     * `--primary-hover` and `--accent-solid` exist because the storefront
+     * needed both and had been spelling them as literal hex.
+     *
+     * `hover:bg-primary/90` is the design system's own hover idiom and it only
+     * works for a light-ish primary on a light page: at 90% opacity a DARK
+     * brand blends towards the page and gets lighter on hover, which is
+     * backwards. A pressed state is its own colour.
+     *
+     * `--accent-solid` is the accent as the owner picked it. `--accent` is a
+     * near-white tint of the same hue because `bg-accent` paints hover
+     * surfaces; a cart badge or a "new" pill needs the saturated version, and
+     * without this token the storefront hard-coded one.
+     */
+    --primary-hover: 24 95% 30%;
+    /*
+     * The saturated accent a cart badge or a "nouveau" pill is painted with,
+     * so it carries text and has to clear AA both ways: 38% reads at 4.58:1 on
+     * `--muted` and takes a white label at 5.75:1. At 53% it was 2.65:1.
+     */
+    /* Darkened for the 51 templates. A template overrides --muted and not this
+       token, so a fixed ink met a shifted surface: 4.03-4.41:1 across the
+       catalogue against the 4.5 AA asks, worst on poulet-wingsclub. 34% clears
+       every template surface at 4.693 and improves its own white label from
+       5.028 to 5.997. */
+    --accent-solid: 24 90% 34%;
+    --accent-solid-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 71% 4%;
+    --muted: 220 14% 96%;
+    /*
+     * 45%, not 46%. One point, and it is the difference between 4.42:1 and
+     * 4.58:1 on `--muted` — the surface `text-muted-foreground` most often
+     * lands on, in 952 places across the two apps and the two UI packages.
+     */
+    --muted-foreground: 220 9% 45%;
+    --accent: 24 80% 97%;
+    --accent-foreground: 24 95% 30%;
+    /*
+     * `text-destructive` outnumbers `bg-destructive` four to one (84 uses
+     * against 22), so this token is read far more often than it is filled.
+     * At 60% it was 3.45:1 on `--muted` and its own white label was 3.78:1;
+     * 47% clears both (4.60:1 and 6.29:1).
+     */
+    /*
+     * 41%, and it has to satisfy three independent measurements — take the
+     * darker, because a tint of the ink under the ink is the surface least
+     * forgiving of it and all three are that shape.
+     *
+     * #447 measured the engine's own light admin: `bg-destructive/10
+     * text-destructive` at 47% gives 4.18:1, and 44% clears it.
+     * This branch measured the 51 shipped templates, where a template
+     * overrides --card, --background and --muted and NOT this token, so a
+     * fixed ink meets a shifted surface: `bg-destructive/5` composited over
+     * fast-food-grill77 measured 4.176:1, and 42% is what clears all 51.
+     *
+     * 42% WAS the darker, and it was measured against `bg-destructive/5`. The
+     * sweep it was measured with could not see `bg-destructive/10`: not one
+     * region in `template-contrast.test.ts` declared a `surface`, so every pair
+     * on a shell-painted background came back `surfaceKnown: false` and was
+     * discarded — 40.9% of what it measured. With the surfaces declared,
+     * `text-destructive on bg-destructive/10` over food-truck-braisenroute
+     * (`--background: 30 15% 94%`, a warm off-white rather than the engine's
+     * `0 0% 99%`) measures 4.495:1 against a floor of 4.5 — short by 0.005, on
+     * two admin screens.
+     *
+     * 41% clears all 51 palettes on both tints. Every other pairing improves
+     * with it, as it did at 42%: a white label on the fill gains again, and so
+     * does the fill's separation from the page. Do not lighten this — 44% is
+     * the admin-only answer, 42% is the answer of a sweep that was dropping
+     * two pairs in five, and both put templates back under AA.
+     */
+    --destructive: 0 84% 41%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 93%;
+    /*
+     * `--input` is the BOUNDARY of a form field, and WCAG 1.4.11 asks 3:1 of
+     * the visual information that identifies a control. It was the same value
+     * as `--border` — 1.15:1 against the page — so every text field in the
+     * product was, to a low-vision user, a rectangle that was not there. 59%
+     * is the first lightness of the same neutral that clears the bar (3.06:1).
+     * `--border` stays where it is: a decorative separator between two blocks
+     * of content is not a control, and 1.4.11 does not ask anything of it.
+     */
+    --input: 220 13% 59%;
+    --ring: 24 95% 37%;
+    --radius: 0.625rem;
+    --chart-1: 24 90% 58%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 220 60% 50%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 280 65% 60%;
+
+    /* Restaurant-specific tokens */
+    /*
+     * `--success` was `142 76% 36%`, which is 3.35:1 on white — below the 4.5:1
+     * WCAG AA floor for text, and below it for white text ON the colour too, so
+     * neither `text-success` nor `bg-success` could carry a word legibly. It
+     * had exactly one use (a design-system swatch), so the storefront spelled
+     * `text-emerald-600` instead and inherited 3.77:1. 28% lightness reads at
+     * 5.18:1 on white and 4.72:1 on `--muted`, the two surfaces it lands on.
+     * See #168.
+     */
+    /*
+     * 25%, chosen the same way and for the same reason as --destructive above.
+     *
+     * #447 measured `bg-success/10 text-success` on the light admin: 4.43:1 at
+     * 28%, cleared at 27%. This branch measured the same token against the 51
+     * templates, whose shifted surfaces put `bg-success/10` at 4.081:1 on
+     * fast-food-grill77; 25% is what clears all 51.
+     *
+     * 25% is the darker of the two, so it clears the admin chip as well. Do
+     * not lighten it back to 27%.
+     */
+    --success: 142 76% 25%;
+    --success-foreground: 0 0% 100%;
+    /*
+     * 30%, and the label inverts with it. At 50% this amber measured 2.09:1 on
+     * the page and 1.95:1 on `--muted` — unreadable as a word, and below even
+     * the 3:1 a warning ICON needs under 1.4.11. It had no `text-` or `bg-`
+     * use at all when #410 measured it, which is why nothing had caught it and
+     * why moving it costs nothing. 30 rather than 31 so it also clears its own
+     * `bg-warning/10` tint, which is how a warning banner is painted.
+     */
+    /* Darkened for the 51 templates, not for the engine's own page: a template
+       overrides --card, --background and --muted and NOT this token, so a fixed
+       ink met a shifted surface. `bg-warning/10` composites this colour over that
+       surface, and the same colour written on the result measured 4.260:1 on
+       fast-food-grill77 against the 4.5 AA asks. Solved across all 51. */
+    --warning: 38 92% 28%;
+    --warning-foreground: 0 0% 100%;
+    /* 45%: at 60% a white label on it measured 3.63:1. */
+    --info: 217 91% 45%;
+    --info-foreground: 0 0% 100%;
+
+    /* Order status colors */
+    --status-pending: 38 92% 50%;
+    --status-confirmed: 217 91% 60%;
+    --status-preparing: 25 95% 53%;
+    --status-ready: 142 76% 36%;
+    --status-delivered: 262 83% 58%;
+    --status-cancelled: 0 84% 60%;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 20% 98%;
+    --card: 224 50% 7%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 50% 7%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 24 95% 58%;
+    --primary-foreground: 224 71% 4%;
+    --primary-ink: 24 95% 58%;
+    --primary-hover: 24 95% 65%;
+    --accent-solid: 24 90% 58%;
+    --accent-solid-foreground: 224 71% 4%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 24 40% 12%;
+    --accent-foreground: 24 95% 70%;
+    /*
+     * A dark red is not a colour you can READ on a dark page: `0 63% 31%`
+     * measured 1.48:1 on `--muted` and 2.04:1 on `--background`, and
+     * `text-destructive` is used four times as often as `bg-destructive`. So
+     * dark mode lifts it, exactly as it lifts `--success`, and the label that
+     * goes on it inverts with it.
+     */
+    --destructive: 0 70% 71%;
+    --destructive-foreground: 224 71% 4%;
+    --border: 215 28% 17%;
+    /* Same rule, lifted instead of darkened: 3.08:1 on the dark page. */
+    --input: 215 28% 39%;
+    --ring: 24 95% 58%;
+    --chart-1: 24 90% 58%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 220 70% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Restaurant-specific tokens - dark mode */
+    /* Light enough to read on the dark ground (11:1), so the foreground that
+     * pairs with it is the dark one — the same inversion `--primary` makes. */
+    --success: 142 60% 60%;
+    --success-foreground: 224 71% 4%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 224 71% 4%;
+    /* Darkened for the 51 templates, not for the engine's own page: a template
+       overrides --card, --background and --muted and NOT this token, so a fixed
+       ink met a shifted surface. `bg-info/10` composites this colour over that
+       surface, and the same colour written on the result measured 4.5 in dark on
+       fast-food-grill77 against the 4.5 AA asks. Solved across all 51. */
+    --info: 217 91% 72%;
+    --info-foreground: 224 71% 4%;
+
+    /* Order status colors - dark mode */
+    --status-pending: 38 92% 50%;
+    --status-confirmed: 217 91% 60%;
+    --status-preparing: 25 95% 53%;
+    --status-ready: 142 76% 36%;
+    --status-delivered: 262 83% 58%;
+    --status-cancelled: 0 84% 60%;
+  }
+}
+
+@theme inline {
+  /* Map CSS variables to Tailwind color tokens */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-ink: hsl(var(--primary-ink));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-accent-solid: hsl(var(--accent-solid));
+  --color-accent-solid-foreground: hsl(var(--accent-solid-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Restaurant-specific colors */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+
+  /* Order status colors */
+  --color-status-pending: hsl(var(--status-pending));
+  --color-status-confirmed: hsl(var(--status-confirmed));
+  --color-status-preparing: hsl(var(--status-preparing));
+  --color-status-ready: hsl(var(--status-ready));
+  --color-status-delivered: hsl(var(--status-delivered));
+  --color-status-cancelled: hsl(var(--status-cancelled));
+
+  /* Font families */
+  --font-family-sans: var(--font-inter);
+  --font-family-heading: var(--font-poppins);
+  /* Tailwind v4 builds font utilities from the `--font-*` namespace, so the
+     two `--font-family-*` tokens above never emitted `.font-sans`/
+     `.font-heading`. `font-heading` is used by the design-system demo, is
+     documented in DESIGN_SYSTEM.md, and now by every gamification screen —
+     and until these two lines it silently resolved to the body font. */
+  /*
+   * `--brand-font-*` is the runtime hook the Design screen's typography tab
+   * writes through (`StoreTheme` -> `buildBrandingCss`). It has to be spelled
+   * here, inside the utility's own value, because `@theme inline` substitutes
+   * the value into `.font-sans` at build time: overriding `--font-sans` at
+   * `:root` afterwards would change nothing. Overriding the variable NAMED
+   * inside it does, and the fallback keeps the engine's font when no
+   * establishment has chosen one.
+   */
+  --font-sans: var(--brand-font-body, var(--font-inter));
+  --font-heading: var(--brand-font-heading, var(--font-poppins));
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /*
+   * The radius scale, derived from `--radius` (#512).
+   *
+   * WHAT WAS BROKEN. Fifty of the fifty-one templates end `theme.css` with a
+   * `Shape language` heading and a `--radius`, and `templates/default/theme.css`
+   * — the file a client edits — lists it among the tokens they tune. It reached
+   * nothing a diner saw. Tailwind v4 builds the `rounded-*` utilities from the
+   * `--radius-*` NAMESPACE, and this block mapped none of it, so every one of
+   * them resolved to Tailwind's own default scale and `--radius` had two
+   * readers in the whole product: `packages/ui`'s `InputGroup`, and the demos'
+   * own stylesheet. Measured on 14 September 2026: 405 hard-coded `rounded-*`
+   * literals across 44 storefront files, not one reachable by a template.
+   * `pizzeria-verace` at `0.25rem` and `fast-food-verte` at `1.5rem` rendered
+   * the same shapes.
+   *
+   * A RATIO, NOT AN OFFSET, AND THE CATALOGUE IS WHY. shadcn's own convention
+   * is additive — `calc(var(--radius) - 2px)` and friends — and it fails at the
+   * sharp end, which is where this catalogue lives: 30 of the 50 sit at or
+   * below `0.5rem` and three ask for `0rem` outright. An offset leaves
+   * `rounded-2xl` — the storefront's most-used radius, 114 of the 405 — at 6px
+   * on a template that asked for square corners, which is the same half-kept
+   * promise this token already was. A ratio cannot do that, and cannot reach a
+   * negative radius either, so it needs no `max()` guard.
+   *
+   * ANCHORED SO TODAY DOES NOT MOVE. Each multiplier is that token's Tailwind
+   * 4.2.2 default divided by the engine's own `--radius: 0.625rem`, so at the
+   * engine value every one resolves to the byte-identical default — 2, 4, 6, 8,
+   * 12, 16, 24 and 32px. Nothing changes shape, in the storefront or the
+   * dashboard, until a template is applied; and a template already repaints the
+   * dashboard on purpose, since `theme.css` sets the sidebar tokens on `:root`.
+   * `__tests__/radius-scale.test.ts` reads both ends of that arithmetic out of
+   * this file and out of Tailwind's own `theme.css`, so a multiplier cannot be
+   * retuned into a silent redesign of every delivered site, and a Tailwind
+   * upgrade that moves the defaults is a failing test rather than a surprise.
+   *
+   * THE WHOLE NAMED SCALE, INCLUDING THE TWO STEPS THE SHOP DOES NOT SPELL.
+   * `xs` and `sm` appear only in `packages/ui` and `packages/admin` today, and
+   * `4xl` nowhere. They are mapped anyway: a scale with two steps pinned to
+   * Tailwind while the other six follow the establishment is not a shape
+   * language, and the anchor makes each of them a no-op until it is used.
+   *
+   * WHAT IS DELIBERATELY NOT MAPPED. `rounded-full` (107 uses) and the bracket
+   * literals (63) stay literal. `rounded-full` is a SHAPE and not a step on a
+   * scale — an avatar and a pill button both spell it, and only one of them is
+   * a radius language — and `rounded-[6rem]` on the hero is art direction, the
+   * way the four colour literals in #41 stayed literal with their reasons
+   * stated beside them.
+   */
+  --radius-xs: calc(var(--radius) * 0.2);
+  --radius-sm: calc(var(--radius) * 0.4);
+  --radius-md: calc(var(--radius) * 0.6);
+  --radius-lg: calc(var(--radius) * 0.8);
+  --radius-xl: calc(var(--radius) * 1.2);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-3xl: calc(var(--radius) * 2.4);
+  --radius-4xl: calc(var(--radius) * 3.2);
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    /* See `--font-sans` above for why the override is named inside the value. */
+    font-family: var(--brand-font-body, var(--font-inter)), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--brand-font-heading, var(--font-poppins)), system-ui, -apple-system, sans-serif;
+  }
+
+  /*
+   * The storefront's own palette — the colours a diner has always seen.
+   *
+   * They were 228 literal hex utilities across 34 files: `bg-[#0D5C3F]` 66
+   * times, `text-[#0D5C3F]` 36, `hover:bg-[#0A412D]` 20, and so on. Against
+   * eight uses of `bg/text/border-primary` in the same trees. So an
+   * establishment could pick a colour on the Design screen, the custom property
+   * would change correctly, and the hero, the menu header, the add-to-cart
+   * button and the checkout button would all stay dark green — which is what
+   * "theming does nothing" actually meant, and it was equally true of the 51
+   * templates under `apps/themes/templates/`.
+   *
+   * The values are unchanged: these are the same greens and the same cream,
+   * read out of the markup and written down once. An establishment that has set
+   * no branding renders exactly what it rendered before.
+   *
+   * SCOPED, not global, and inside `@layer base` on purpose. Scoped because the
+   * administration is not this green and should not become it. Layered because
+   * `StoreTheme` emits an establishment's palette UNLAYERED, and an unlayered
+   * declaration beats every layered one whatever its specificity or order — so
+   * a store's own colours win here without depending on which stylesheet
+   * happens to load last.
+   */
+  .storefront-theme {
+    --background: 51 64% 98%;
+    --foreground: 0 0% 10%;
+    --primary: 158 75% 21%;
+    --primary-foreground: 0 0% 100%;
+    --primary-ink: 158 75% 21%;
+    --primary-hover: 158 73% 15%;
+    --ring: 158 75% 21%;
+    --accent: 158 45% 96%;
+    --accent-foreground: 158 75% 18%;
+    /* 37%, for the same reason `:root` moved: at 53% a white badge label on
+     * this orange measured 2.78:1. One point deeper than the engine's own
+     * because `--muted` here is the engine's `220 14% 96%` and this hue is a
+     * shade lighter — 38% measured 4.39:1 on it. */
+    /* Same correction as the engine scope above, for the same reason: a template
+       shifts --muted underneath a token it does not declare. 4.03-4.44:1 across
+       the catalogue; 34% clears at 4.511 and takes its own white label from
+       5.036 to 5.765. */
+    --accent-solid: 25 95% 34%;
+    --accent-solid-foreground: 0 0% 100%;
+  }
+
+  /*
+   * The storefront in dark mode — the half of the palette that did not exist.
+   *
+   * THE DEFECT #410 FOUND. `.storefront-theme` sits on a DESCENDANT element
+   * (`components/storefront/storefront-shell.tsx`), so its declarations beat
+   * the `.dark` block on `<html>` for every token it names — a declaration on
+   * the element always beats an inherited one, whatever the layer. It named
+   * nine, all of them light. `--card`, `--muted`, `--secondary` and
+   * `--popover` were left to fall through to `.dark`, which paints them
+   * near-black. So a diner whose phone is set to dark mode — and
+   * `app/providers.tsx` said `defaultTheme="system" enableSystem`, so that was
+   * every such diner, with no toggle to escape it — read `--foreground`
+   * (`0 0% 10%`, near-black) on `--card` (`224 50% 7%`, near-black):
+   * **1.10:1**, measured. Half the storefront was black text on a black card.
+   *
+   * The answer is not to drop dark mode: the markup is already written for it
+   * (`dark:bg-muted`, `dark:text-foreground` appear throughout the storefront
+   * trees), and a diner who chose dark mode chose it. So the storefront gets
+   * the dark counterpart of its own identity — the cream ink and the green,
+   * inverted — rather than half of the engine's.
+   *
+   * The way out exists now, and it is two things. `ThemeToggle` in the header
+   * lets a diner step between light, dark and their device's own setting, and
+   * the `theme` entry of `site.config.ts` sets which of the three a site opens
+   * in. Neither removes this block: a diner who picks dark still reads it.
+   *
+   * Every pair below was solved rather than picked: each ink clears 4.5:1 on
+   * every surface in this block, each label clears 4.5:1 on its own fill, and
+   * `--primary`, `--ring`, `--input` and `--accent-solid` clear 3:1 against
+   * `--background` (WCAG 1.4.11). `--border` deliberately does not: it is a
+   * decorative separator, not a control boundary, which is why `--input`
+   * is a separate and lighter value.
+   */
+  .dark .storefront-theme {
+    --background: 158 24% 7%;
+    --foreground: 51 30% 96%;
+    --card: 158 20% 11%;
+    --card-foreground: 51 30% 96%;
+    --popover: 158 20% 11%;
+    --popover-foreground: 51 30% 96%;
+    --primary: 158 52% 55%;
+    --primary-foreground: 158 45% 8%;
+    --primary-ink: 158 52% 55%;
+    --primary-hover: 158 52% 66%;
+    --ring: 158 52% 55%;
+    --secondary: 158 14% 18%;
+    --secondary-foreground: 51 30% 96%;
+    --muted: 158 14% 18%;
+    --muted-foreground: 155 12% 72%;
+    --accent: 158 28% 15%;
+    --accent-foreground: 158 50% 74%;
+    --accent-solid: 25 90% 62%;
+    --accent-solid-foreground: 158 45% 8%;
+    --border: 158 14% 22%;
+    --input: 158 16% 36%;
+    --destructive: 0 70% 71%;
+    --destructive-foreground: 0 40% 10%;
+    /* The engine's dark `--info` is tuned for a near-black page; on this
+     * greener, lighter `--muted` it measured 4.09:1. */
+    --info: 217 91% 70%;
+    --info-foreground: 158 45% 8%;
+    --success: 142 55% 62%;
+    --success-foreground: 158 45% 8%;
+  }
+}
+
+:root {
+  --sidebar: hsl(0 0% 99%);
+  --sidebar-foreground: hsl(224 71% 4%);
+  --sidebar-primary: hsl(24 95% 37%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(24 80% 97%);
+  --sidebar-accent-foreground: hsl(224 71% 4%);
+  --sidebar-border: hsl(220 13% 93%);
+  --sidebar-ring: hsl(24 95% 37%);
+}
+
+.dark {
+  --sidebar: hsl(224 50% 7%);
+  --sidebar-foreground: hsl(210 20% 98%);
+  --sidebar-primary: hsl(24 95% 58%);
+  /*
+   * Ink, not paper. `--primary-foreground` inverts in dark mode because
+   * `--primary` is lifted to a light orange there; this copy of it was left
+   * white and measured 2.57:1 — the sidebar's own selected item, in the chrome
+   * an owner looks at all day. #410.
+   */
+  --sidebar-primary-foreground: hsl(224 71% 4%);
+  --sidebar-accent: hsl(24 40% 12%);
+  --sidebar-accent-foreground: hsl(210 20% 98%);
+  --sidebar-border: hsl(215 28% 17%);
+  --sidebar-ring: hsl(24 95% 58%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Dashboard animation utilities */
+@layer utilities {
+  .stagger-children > * {
+    --stagger-delay: 75ms;
+    animation-delay: calc(var(--child-index, 0) * var(--stagger-delay));
+    animation-fill-mode: backwards;
+  }
+}
+
+/* Google Places autocomplete dropdown - ensure it renders above dialogs and is clickable */
+.pac-container {
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
+
+/* Storefront-styled Google Places dropdown */
+.storefront-pac-input ~ .pac-container,
+.pac-container {
+  border: none !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.03) !important;
+  margin-top: 8px !important;
+  padding: 8px !important;
+  font-family: inherit !important;
+  overflow: hidden !important;
+}
+
+.pac-container .pac-item {
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.pac-container .pac-item:hover {
+  background-color: #f0fdf4 !important;
+}
+
+.pac-container .pac-item .pac-icon {
+  display: none !important;
+}
+
+.pac-container .pac-item .pac-item-query {
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  color: #27272a !important;
+}
+
+.pac-container .pac-item .pac-item-query + span {
+  font-size: 0.75rem !important;
+  color: #71717a !important;
+}
+
+.pac-container .pac-item.pac-item-selected {
+  background-color: #ecfdf5 !important;
+}
+
+.pac-container::after {
+  display: none !important;
+}
+
+/* When Google Places dropdown is open, prevent the dialog overlay from stealing clicks */
+body:has(.pac-container:not(:empty)) [data-slot="dialog-overlay"] {
+  pointer-events: none;
+}
+
+/* Respect user motion preferences.
+
+   This block used to name `.animate-in` and nothing else — one occurrence in
+   the whole app, in `app/(storefront)/account/page.tsx`. Everything else that
+   moves went untouched: `animate-pulse` and `animate-spin` on the loading
+   states, the `live-dot` pulse on the kitchen display, every CSS transition,
+   and the smooth scrolling. A preference honoured for one element is not a
+   preference honoured.
+
+   The universal selector is the right instrument here: the rule is not "this
+   animation is unwanted", it is "this person asked for no motion", and any
+   animation the product grows afterwards is covered without anyone
+   remembering to add it. `0.01ms` rather than `none` so an `animationend`
+   listener still fires — a handler that never runs is a component stuck
+   half-rendered.
+
+   It cannot reach framer-motion, which writes inline `style` per frame and is
+   beyond any stylesheet. `<MotionConfig reducedMotion="user">` in
+   `app/providers.tsx` is that half. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+
+/* ═══════════ Layout families (#507) ═══════════
+ *
+ * A template carries seven of them — nav, hero, menu, btn, tex, foot, up —
+ * written onto `<html>` by `app/layout.tsx` from `site/layout.ts`, the way the
+ * demo engine writes them (`demos/assets/site.css` declares the contract in its
+ * own header). The allowed values live once, in `lib/layout-families.ts`.
+ *
+ * EVERY RULE BELOW IS CONFINED TO `.storefront-theme`, AND THAT IS NOT STYLE.
+ * The attribute sits on `<html>`, which is also the administration's ancestor:
+ * a selector that reads one without naming the storefront's own element
+ * repaints the dashboard. #410 and #41 both cost exactly that mistake, one
+ * layer down each time. `layout-families.test.ts` fails a rule that escapes.
+ *
+ * Not every value is honoured here, and the list is `HONOURED` in
+ * `lib/layout-families.ts` — per VALUE, since a family is not atomic.
+ * `templates/README.md` says which is which, with the measured reason each
+ * unpainted one is still unbuilt, to whoever picks a template. The test holds
+ * this block against that list in both directions: a value claimed there with
+ * no rule here fails, and a rule here for a value not claimed there fails too.
+ *
+ * No count in this comment, deliberately. It used to say two families were
+ * honoured and the other five painted nothing, and went on saying it after that
+ * stopped being true. A comment that restates a measurement goes stale by
+ * construction; this one points at the measurement.
+ */
+
+/* `tex` — a background texture under the shop. Decorative: it paints the
+ * shell's own ground, touches no layout and moves no text. The four patterns
+ * are the demo engine's, retuned for this palette: `--muted-foreground` at low
+ * alpha, so the texture follows the establishment's own colours rather than a
+ * grey the template did not choose. `none` deliberately has no rule. */
+[data-tex="dots"] .storefront-theme {
+  background-image: radial-gradient(hsl(var(--muted-foreground) / 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+[data-tex="lines"] .storefront-theme {
+  background-image: repeating-linear-gradient(
+    0deg,
+    hsl(var(--muted-foreground) / 0.05) 0 1px,
+    transparent 1px 32px
+  );
+}
+
+[data-tex="grain"] .storefront-theme {
+  background-image: repeating-conic-gradient(
+    hsl(var(--muted-foreground) / 0.04) 0% 0.0001%,
+    transparent 0.0002% 0.0004%
+  );
+}
+
+[data-tex="checker"] .storefront-theme {
+  background-image: repeating-linear-gradient(
+    45deg,
+    hsl(var(--muted-foreground) / 0.05) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+/* `up` — headings in capitals, the demo engine's `data-up="1"`.
+ *
+ * Headings only, never body copy or a control: capitals cost about ten per cent
+ * reading speed on a passage, and a screen reader may spell a short all-caps
+ * word letter by letter. `text-transform` leaves the accessible name alone —
+ * the DOM text is unchanged — so this is presentation, which is the whole point
+ * of it being a template's choice rather than the copy's. */
+[data-up="1"] .storefront-theme :is(h1, h2, h3) {
+  text-transform: uppercase;
+}
+
+/* `foot` — how the footer is laid out. Three of the demo engine's arrangements,
+ * over the engine's own markup rather than the demos'. The hooks are the
+ * `storefront-footer*` classes on the component; Tailwind's generated names are
+ * not a contract, so the CSS carries names of its own.
+ *
+ * `columns` has no rule: it is what the component already renders, so the
+ * default costs nothing and an unstyled footer is already right. */
+[data-foot="center"] .storefront-theme .storefront-footer-cols {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2.5rem;
+}
+
+[data-foot="center"] .storefront-theme .storefront-footer-note {
+  flex-direction: column;
+  text-align: center;
+}
+
+/* `heavy` — a stated top edge and a bigger, capitalised name. `--primary-foreground`
+ * rather than `--foreground`: this footer sits on `--primary-hover`, and the
+ * demos' `--foreground` would be ink from the wrong ground. */
+[data-foot="heavy"] .storefront-theme .storefront-footer {
+  border-top: 2px solid hsl(var(--primary-foreground) / 0.35);
+}
+
+[data-foot="heavy"] .storefront-theme .storefront-footer-brand {
+  font-size: 2.125rem;
+  text-transform: uppercase;
+}
+
+/* `nav` — how the top bar is arranged. Four of the demo engine's, over the
+ * engine's own markup. The hooks are the `storefront-nav*` classes on the
+ * component.
+ *
+ * `left` has no rule: the bar already is brand, links, actions across a
+ * `justify-between`, so the default costs nothing.
+ *
+ * Reviewed in a browser at 1280 and 390, over both header states, with
+ * `scripts/layout-harness.mjs`. jsdom cannot lay out, so nothing in the test
+ * suite can see these — the harness is the instrument, and the rules were
+ * written against what it showed rather than against the demos' markup. */
+
+/* `center` — the establishment's name in the middle, links left, actions right.
+ * A grid rather than reordering the flex row: the brand has to be centred on the
+ * BAR, not merely between its neighbours, and those neighbours are different
+ * widths. `1fr auto 1fr` puts it on the bar's own centre line whatever they do.
+ *
+ * Desktop only. Below `lg` the links and the actions are display:none and a
+ * hamburger takes over, so a three-column grid there would centre the brand
+ * between two empty tracks and shift it off the visual centre. */
+@media (min-width: 1024px) {
+  [data-nav="center"] .storefront-theme .storefront-nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  [data-nav="center"] .storefront-theme .storefront-nav-brand {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+  }
+
+  [data-nav="center"] .storefront-theme .storefront-nav-links {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* The actions live inside a TooltipProvider, which renders no element of its
+     own — so the wrapper is a grid item here and `justify-self` reaches it. */
+  [data-nav="center"] .storefront-theme .storefront-nav-actions {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+/* `bar` — a stated edge, on both states of the header.
+ *
+ * AN EDGE, AND DELIBERATELY NOT A GROUND. The first version of this rule also
+ * forced `background: hsl(var(--background))`, on the reasoning that a "bar" is
+ * opaque. The harness showed what that costs: over the hero the component
+ * paints the brand and the links `text-white` for a photograph, and a rule that
+ * removes the photograph leaves white on cream — measured unreadable in the
+ * browser, and invisible to every test here, because jsdom does not lay out and
+ * the contrast sweep reads source files rather than rendered pages.
+ *
+ * CSS cannot fix the other half: the action controls take their colour from a
+ * `variant` PROP the component computes, and no stylesheet reaches a prop. So
+ * `bar` owns what it can own completely. The demo engine's `bar` is a
+ * border-bottom and uppercase links and has no transparent-over-hero state at
+ * all, so this is also the faithful reading of it — the engine's links are
+ * already uppercase.
+ *
+ * Over the photograph the line is ink on the image, which reads; on an inner
+ * page it is the edge the value is named for. */
+[data-nav="bar"] .storefront-theme .storefront-nav {
+  border-bottom: 2px solid hsl(var(--foreground) / 0.9);
+}
+
+/* `minimal` — no edge at all, and links that step back: smaller, lighter,
+ * further apart. `letter-spacing` rather than a weight change, because the
+ * links are `font-black uppercase` and dropping the weight alone reads as a
+ * different font. */
+[data-nav="minimal"] .storefront-theme .storefront-nav {
+  border-bottom-color: transparent;
+  box-shadow: none;
+}
+
+[data-nav="minimal"] .storefront-theme .storefront-nav-links {
+  gap: 2.25rem;
+}
+
+[data-nav="minimal"] .storefront-theme .storefront-nav-links a {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* `hero` — how the first screen is arranged.
+ *
+ * THREE OF TEN, AND THE SEVEN ARE NOT A BACKLOG. The demo engine decides this one
+ * by emitting a different section per value (`site.js:323` is a `switch`), not
+ * by reading the attribute, so each of its heroes carries elements the others do
+ * not: `.hero-editorial .stamp`, `.hero-poster .marq`, `.hero-magazine .rule`,
+ * `.hero-fullbleed .bg`. Four of them are arrangements of what the engine's hero
+ * already has — a text column, one image and two floating badges — and those are
+ * the three below. The rest want content that does not exist here:
+ *
+ *   fullbleed  a photograph to sit behind the text. The engine's image is a
+ *              cut-out product shot (object-contain, drop-shadow), which as a
+ *              background reads as a mistake rather than a photograph.
+ *   editorial  a round photo AND a rating stamp — the demo's says "4,8 sur 5".
+ *              This product does not invent social proof (CLAUDE.md), and
+ *              `tests/storefront/no-fabricated-social-proof.test.ts` would
+ *              refuse it. Not a limitation: a decision.
+ *   magazine   a rule and a meta line (section, date) with nothing to fill them.
+ *   board      a board of locations — a different section, not a hero.
+ *   collage    two overlapping photographs; the CMS block carries one image.
+ *   poster     type at poster scale plus a running marquee strip. The type half
+ *              is expressible; the marquee is markup, and half a value is worse
+ *              than none.
+ *   duo        a colour half and a photo half with a diagonal between them. It
+ *              WAS written — `clip-path` on the media column over a ground of
+ *              `--primary-hover` — and the harness showed why it is in this list
+ *              instead: the media column holds a cut-out product shot on no
+ *              ground of its own, so the diagonal cut the dish rather than
+ *              dividing two panels, and the ground behind it never showed. It
+ *              reads as a clipping mistake. Same want as `fullbleed`: a
+ *              photograph, which this hero does not have.
+ *
+ * `HONOURED.hero` names the three, and a test holds it against the rules here, so
+ * a fifth cannot be claimed without being written. */
+
+/* `zen` — pared back and airy: two equal columns, the headline down from
+ * display scale to something a person reads rather than receives, and the space
+ * doing the work instead of the size. */
+[data-hero="zen"] .storefront-theme .storefront-hero-row {
+  gap: 4rem;
+}
+
+[data-hero="zen"] .storefront-theme .storefront-hero-text h1 {
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+[data-hero="zen"] .storefront-theme .storefront-hero {
+  padding-top: 8rem;
+  padding-bottom: 7rem;
+}
+
+/* `banner` — a straight band. The engine's hero curves into the page with a
+ * 6rem bottom radius; a banner is the value that does not. */
+[data-hero="banner"] .storefront-theme .storefront-hero {
+  border-radius: 0;
+  padding-top: 6rem;
+  padding-bottom: 5rem;
+}
+
+[data-hero="banner"] .storefront-theme .storefront-hero-media {
+  max-width: 28rem;
+}
+
+/* `menu` — how the dishes are presented.
+ *
+ * FIVE OF EIGHT. Like `hero`, the demo engine decides this one by emitting
+ * different markup — `renderMenu(dishes, style, full)` at `site.js:276` branches
+ * on the value — so each of its presentations carries elements the others do
+ * not. Five are reflows of the grid the engine already renders, or of the card
+ * body inside it, and are the rules below and further down this file; the
+ * remaining three want markup or data this grid has no place for:
+ *
+ *   mosaic   photographs at mixed sizes, with the name and price laid over the
+ *            dish's own image in white. Two wants, and the second is the hard
+ *            one: this engine draws a placeholder glyph on `--muted` for a dish
+ *            with no photograph, so the overlay would be white on light —
+ *            unreadable, on exactly the dishes an owner has not got round to
+ *            photographing. The contrast sweep cannot see it either, because it
+ *            reads source files and this is text over an uploaded image.
+ *   bento    the same want as mosaic, plus mixed spans: the engine's cards are
+ *            uniform by construction and varying them by `:nth-child` makes the
+ *            layout depend on how many dishes a category happens to hold.
+ *   tabs     a sticky category bar over rows. The rows are `tickets` with a
+ *            smaller thumbnail; the bar is the obstacle — the menu page HAS a
+ *            category row, but it is in `MenuContent`, not in this grid, and
+ *            the homepage grid has no category row at all. Honouring it here
+ *            would paint the rows everywhere and the bar on one page.
+ *
+ * This block said THREE OF EIGHT from #507 until #566 painted `tickets` and
+ * `dotted` at the foot of this file, and went on saying it afterwards — with
+ * the two paragraphs explaining why each was impossible still in place, a few
+ * hundred lines above the rules that do it. `HONOURED.menu` and
+ * `layout-families.test.ts` were right throughout; only the prose a reader
+ * meets first was wrong, which is the half no test can hold.
+ *
+ * `HONOURED.menu` names the five, and a test holds it against the rules here. */
+
+/* `zen` — a single column and a hairline between dishes. The difference from
+ * `dotted` is the rule: a hairline, not a dotted leader, and more air. */
+[data-menu="zen"] .storefront-theme .storefront-menu-item {
+  border-radius: 0;
+  border-width: 0 0 1px 0;
+  border-bottom-color: hsl(var(--border));
+  box-shadow: none;
+  background: none;
+  padding-block: 1.25rem;
+}
+
+/* `ledger` — a numbered list, the way a kitchen writes one. The number comes
+ * from a CSS counter and is decorative: it is not in the DOM, so nothing reads
+ * "one" before every dish, and the order it states is the order already on the
+ * page. */
+[data-menu="ledger"] .storefront-theme .storefront-menu {
+  counter-reset: dish;
+}
+
+[data-menu="ledger"] .storefront-theme .storefront-menu-item {
+  counter-increment: dish;
+  position: relative;
+  border-radius: 0;
+  border-width: 0 0 1px 0;
+  border-bottom-color: hsl(var(--border));
+  box-shadow: none;
+  background: none;
+  padding-left: 3.5rem;
+}
+
+[data-menu="ledger"] .storefront-theme .storefront-menu-item::before {
+  content: counter(dish, decimal-leading-zero);
+  position: absolute;
+  left: 0.75rem;
+  top: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+}
+
+/* `cards` is the default and has no rule: a grid of photo cards is what the
+ * component already renders. */
+
+/* `btn` — the shape language of a control, and the first family whose rules act
+ * on a COMPONENT rather than on a section of the page.
+ *
+ * WHY THIS COULD NOT BE WRITTEN BEFORE #512. Three of the five values are
+ * radius languages, and `--radius` reached nothing on the shop: `@theme inline`
+ * mapped no `--radius-*` token, so the 405 hard-coded `rounded-*` literals
+ * resolved to Tailwind's own scale whatever the template asked for. Writing
+ * `pill` and `square` over that would have been two rules fighting 405
+ * literals. They now sit on the same scale, so a `square` template gets sharp
+ * cards AND sharp buttons rather than sharp buttons on round cards.
+ *
+ * WHAT THE SELECTOR REACHES, AND WHY IT IS NOT A HOOK CLASS. Every other family
+ * here hooks a `storefront-*` class the component carries, because Tailwind's
+ * generated names are not a contract. `data-slot="button"` is a different
+ * thing: it is written by hand in `packages/ui/src/components/Button.tsx` and
+ * is the design system's own contract, so it needs no second name. The bare
+ * `button` beside it is what covers the 56 RAW `<button>` elements the
+ * storefront renders — among them the add-to-cart, which is the most pressed
+ * control on the shop and is not a `Button` at all.
+ *
+ * A RADIUS IS SAFE ON ALL OF THEM; A FILL IS NOT. That bare `button` also
+ * catches controls that are not shape languages — the dish NAME on a card is a
+ * `<button>`, with no ground and no border. Giving it a border-radius is
+ * invisible, because a radius on an element with no background, border or
+ * shadow paints nothing, so `pill` and `square` can cover every control in the
+ * shop and be wrong about none of them.
+ *
+ * `brutal` and `underline` CANNOT take that shortcut, and this block said for
+ * two issues that they were therefore unbuildable. The objection was right and
+ * the conclusion was wrong. Both restyle the FILL — `brutal` adds a hard border
+ * and an offset shadow, `underline` removes the ground entirely — so on the
+ * dish name they would draw a box around a line of text, and on the favourite
+ * heart they would frame an icon. What was said to be missing was a way to tell
+ * a filled control from those: "every filled control in the shop named by hand
+ * — 56 raw buttons across some twenty files, most composing their classes
+ * through `cn()`, so no selector and no scan can sort them."
+ *
+ * THE NAME ALREADY EXISTED, one attribute along from the one this block is
+ * built on. `Button.tsx` writes `data-variant` by hand beside `data-slot`, from
+ * the same `cva` call that decides the ground, so `[data-variant="default"]` IS
+ * the filled primary control and is nothing else. Measured over the storefront:
+ * 49 `Button`s, of which 32 name a variant that is not filled (11 `outline`,
+ * 11 `ghost`, 5 `icon`, 4 `secondary`, 1 `transparent`) and 17 take the default
+ * — and not one of the 56 raw `<button>`s carries the attribute at all, the
+ * dish name and the favourite heart among them. The sweep with a judgement per
+ * button was never needed; the judgement is already in the component.
+ *
+ * AND THAT IS THE DEMO ENGINE'S OWN SCOPE, which is the check that it is the
+ * right one rather than merely a convenient one. `site.css` gives `.btn` the
+ * radius and reserves the fill for `.btn-p` and `.btn-g` — it never styles
+ * every `<button>` on the page. `[data-variant="default"]` is `.btn-p`;
+ * `outline` and `secondary` are `.btn-g`.
+ *
+ * ONE CONTROL IS NAMED BY HAND BESIDE THEM, and only for `brutal`:
+ * `.storefront-menu-add`, the shop's other filled control, which already
+ * carries a hook class. Adding a border and a shadow to something that already
+ * has a ground cannot make it unreadable. `underline` REMOVES the ground, so it
+ * reaches only the `button` form of that class and not the `<div>` the card
+ * renders for a dish that cannot be added — a greyed plus that stayed greyed is
+ * the point of it.
+ *
+ * Measured against the catalogue: `soft`, `pill` and `square` are what 38 of
+ * the 51 templates ask for; `underline` is 8 and `brutal` 5. With those two
+ * painted, `btn` is the fourth family honoured whole and the 13 templates that
+ * named a button style the shop ignored are down to none.
+ *
+ * `soft` is the engine's own and deliberately has no rule — a template asking
+ * for it is asking for what the components already render, now scaled by its
+ * own `--radius`. */
+[data-btn="pill"] .storefront-theme :is(button, [data-slot="button"]) {
+  /* The stadium, not a number: `calc(infinity * 1px)` is what Tailwind's own
+   * `rounded-full` compiles to, and the browser clamps it to half the shorter
+   * side — so a wide CTA becomes a stadium and a square icon button a circle,
+   * from one declaration. */
+  border-radius: calc(infinity * 1px);
+}
+
+[data-btn="square"] .storefront-theme :is(button, [data-slot="button"]) {
+  /* 2px rather than 0, following the demo engine: a hairline reads as a chosen
+   * shape, where a true zero reads as a stylesheet that failed to load. */
+  border-radius: 2px;
+}
+
+/* `brutal` — the hard edge. Two declarations doing two different jobs: the same
+ * 2px `square` gives every control, and on the filled ones a stated border and
+ * an offset shadow with no blur at all. No blur is the whole language — a
+ * shadow that is a displaced copy of the shape reads as printed, where a soft
+ * one reads as lit.
+ *
+ * `--foreground` for both, as the demos do, and not `--border`: this is ink at
+ * full strength, and a hairline colour would make it look like a mistake. On
+ * the hero, where the ground is `--primary` and the CTA is
+ * `--primary-foreground`, that is dark ink around a light control — reviewed at
+ * 1280 and 390 in the harness, on the hero's own CTA and on the dish grid's add
+ * button. */
+[data-btn="brutal"] .storefront-theme :is(button, [data-slot="button"]) {
+  border-radius: 2px;
+}
+
+[data-btn="brutal"] .storefront-theme :is([data-slot="button"][data-variant="default"], button.storefront-menu-add) {
+  /* The radius is restated here rather than left to the rule above, and that is
+   * a cascade fix rather than a duplicate. The rule above is (0,2,1) and
+   * `[data-menu="dotted"]`'s own add-button rule is (0,3,0), so on a dotted
+   * carte the 2px lost and the add button kept dotted's circle while taking
+   * brutal's border — measured in Chromium, a circle with a hard square-cut
+   * edge, which is neither value. This selector is (0,4,0) and carries it. */
+  border-radius: 2px;
+  border: 2px solid hsl(var(--foreground));
+  box-shadow: 4px 4px 0 hsl(var(--foreground));
+}
+
+/* `underline` — the control as a word. The ground goes entirely; the label
+ * carries the colour and a rule under it carries the affordance.
+ *
+ * `--primary-ink` AND NOT `--primary`, for the reason `globals.css` declares
+ * both at `:root`: `--primary` is a fill chosen to carry `--primary-foreground`
+ * on top of it, and this is a WORD's worth of colour on the page's own ground.
+ * Under an establishment's branding the two part company, and using the fill
+ * here would put white-carrying colour on a light background. `[data-menu="dotted"]`
+ * made the same choice for the same reason, further down this file.
+ *
+ * `height: auto` is not cosmetic. The shop's CTAs carry `h-16`, `h-14`, `h-12`
+ * from the component, and a 4rem-tall transparent box with a rule along the
+ * bottom is not a word — it is an empty frame. Removing the ground has to
+ * remove the geometry the ground justified. */
+[data-btn="underline"] .storefront-theme [data-slot="button"][data-variant="default"] {
+  background: none;
+  color: hsl(var(--primary-ink));
+  border-radius: 0;
+  border-bottom: 2px solid hsl(var(--primary-ink));
+  box-shadow: none;
+  height: auto;
+  padding: 0.35rem 0.15rem;
+}
+
+/* THE HERO IS THE EXCEPTION, AND IT IS NOT AN EDGE CASE — it is the first
+ * control a diner sees. `.storefront-hero` is `bg-primary` always, so the rule
+ * above would put `--primary-ink` on `--primary` — and in the storefront scope
+ * those two tokens hold the SAME value. Light: both `158 75% 21%`. Dark: both
+ * `158 52% 55%`. Measured 1.00:1 in each, which is not a poor contrast but the
+ * identical colour — the CTA would vanish outright, and it is the first control
+ * a diner is offered. `--primary-foreground` on that ground measures 7.83:1
+ * light and 8.34:1 dark, which is the ink the ground is chosen to carry. The
+ * demo engine has the identical override at `site.css:199`, for its one hero
+ * that is coloured; here every hero is. */
+[data-btn="underline"] .storefront-theme .storefront-hero [data-slot="button"][data-variant="default"] {
+  color: hsl(var(--primary-foreground));
+  border-bottom-color: hsl(var(--primary-foreground));
+}
+
+/* The outlined and secondary controls — the demos' `.btn-g`. A box that has
+ * lost its fill keeps its border and stops being a shape; a hairline under the
+ * label is what is left of it. */
+[data-btn="underline"] .storefront-theme [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"]) {
+  background: none;
+  border: none;
+  border-bottom: 1px solid hsl(var(--border));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* The add button, which is icon-only here where the demos' is labelled — so it
+ * cannot simply lose its ground and keep its size: a 3rem transparent square
+ * with a rule under it is a box again. It comes down to the glyph plus its
+ * rule, which is what `[data-menu="dotted"]` does for the same control by a
+ * different route.
+ *
+ * `button.storefront-menu-add` and not the bare class: the card renders an
+ * `aria-hidden` `<div>` with that class for a dish that cannot be added, and
+ * giving THAT `--primary-ink` would paint a dead control in the live colour. It
+ * keeps its muted ground, which after this rule is the clearer of the two
+ * states rather than the dimmer one. */
+[data-btn="underline"] .storefront-theme button.storefront-menu-add {
+  background: none;
+  color: hsl(var(--primary-ink));
+  border-radius: 0;
+  border-bottom: 2px solid hsl(var(--primary-ink));
+  box-shadow: none;
+  height: 2rem;
+  width: 2.25rem;
+}
+
+/* WHEN `btn` AND `menu` BOTH DRESS THIS CONTROL, `btn` WINS — and that is a
+ * decision, taken after measuring what happened without one.
+ *
+ * The engine has ONE class for the add button where the demo engine has two:
+ * `.add`, which `data-btn` styles, and `.menu-dotted .addbtn`, which the menu
+ * family styles. Collapsing them onto `.storefront-menu-add` is what puts the
+ * two families on the same element, so one of them has to be told to yield.
+ *
+ * `btn` is the right winner: it is the family whose whole subject is the shape
+ * language of a control, where `menu` arranges dishes and reaches this button
+ * only because the button sits in a dish. Measured in Chromium on a page
+ * carrying both attributes, which is how `layoutAttributes` emits them:
+ * `dotted` + `underline` already resolved this way on specificity alone (the
+ * `button` type selector), and `dotted` + `brutal` did not until the rule above
+ * restated its radius — it produced a circle with a hard border, which is
+ * neither value's design.
+ *
+ * "Wins" is about SHAPE AND FILL, not about size, and the split is deliberate.
+ * `brutal` sets no dimension, so on a carte the button keeps dotted's 1.9rem —
+ * which is right: the row decides how big its controls are, the shape language
+ * decides what they look like. `underline` is the one exception and has to be,
+ * because taking the ground away from a 3rem icon square leaves a frame rather
+ * than a control; it carries its own smaller box for that reason. */
+
+/* `tickets` — the dish as a row: a square thumbnail, the name and description
+ * beside it, the price and the add button at the end. The demo engine's
+ * `.menu-tickets .dish` is `grid-template-columns: 72px 1fr auto auto`, and
+ * this is that over the engine's own card.
+ *
+ * It needs no photograph, which is what separates it from `mosaic` and `bento`.
+ * Those two overlay white text on the dish's own image, and this engine renders
+ * a placeholder glyph on `--muted` when a dish has none — so white-on-light,
+ * unreadable, on exactly the dishes an owner has not photographed yet. The
+ * contrast sweep cannot see it either: it reads source files, and this would be
+ * text over a photograph. That is why they are still unbuilt and this is not.
+ *
+ * The thumbnail overrides the 4:3 block rather than cropping it: `aspect-ratio`
+ * gives way to a fixed square, and `object-fit: cover` on the image inside is
+ * already what the component sets. A dish with no photo keeps the grey square,
+ * which is a thumbnail-shaped absence rather than a broken row. */
+[data-menu="tickets"] .storefront-theme .storefront-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+[data-menu="tickets"] .storefront-theme .storefront-menu-item {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  box-shadow: none;
+  border: 1px solid hsl(var(--border));
+}
+
+[data-menu="tickets"] .storefront-theme .storefront-menu-photo {
+  width: 4.5rem;
+  height: 4.5rem;
+  aspect-ratio: auto;
+  border-radius: calc(var(--radius) * 0.6);
+}
+
+[data-menu="tickets"] .storefront-theme .storefront-menu-body {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0 0.9rem;
+  padding: 0;
+}
+
+/* The name and the description stack in the first column; the footer — price
+ * and add button — moves out of the flow and onto the same row, which is the
+ * whole shape of a ticket. `grid-row: 1 / span 2` rather than `span 2` alone,
+ * because the description is conditional: a dish without one leaves a single
+ * row and an unanchored end would drop below it. */
+[data-menu="tickets"] .storefront-theme .storefront-menu-name {
+  grid-column: 1;
+  margin-bottom: 0;
+}
+
+[data-menu="tickets"] .storefront-theme .storefront-menu-desc {
+  grid-column: 1;
+  margin-bottom: 0;
+}
+
+[data-menu="tickets"] .storefront-theme .storefront-menu-foot {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  margin-top: 0;
+  gap: 0.9rem;
+}
+
+/* Under 40rem the end wraps beneath the text rather than squeezing the name to
+ * nothing — the demos do the same at 620px. */
+@media (max-width: 40rem) {
+  [data-menu="tickets"] .storefront-theme .storefront-menu-body {
+    grid-template-columns: 1fr;
+  }
+
+  [data-menu="tickets"] .storefront-theme .storefront-menu-foot {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 0.5rem;
+  }
+}
+
+/* `dotted` — the printed carte: the dish name, a dotted leader, the price. No
+ * photograph at all, in two columns on a wide screen.
+ *
+ * WHY AN EARLIER ATTEMPT DID NOT WORK, recorded because the markup still looks
+ * as though it should. The card's body is `flex flex-col`, so the name and the
+ * price stacked and the leader had no two ends to span — a dotted rule needs a
+ * row. The body becomes a baseline grid here, which is the whole fix.
+ *
+ * The photograph is hidden rather than dropped from the DOM: this is a
+ * presentation choice a template makes, and a value that removed content would
+ * change what a screen reader is offered depending on the palette bought. The
+ * favourite button lives inside that block, so it goes with it — which is a
+ * real loss, and the reason this value suits a carte-style establishment rather
+ * than a click-and-collect one. It is the demos' own trade: `.menu-dotted` has
+ * no image and no favourite either. */
+[data-menu="dotted"] .storefront-theme .storefront-menu {
+  display: block;
+  columns: 2;
+  column-gap: 3.5rem;
+}
+
+[data-menu="dotted"] .storefront-theme .storefront-menu-item {
+  break-inside: avoid;
+  display: block;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  margin-bottom: 0.25rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px dotted hsl(var(--border));
+}
+
+[data-menu="dotted"] .storefront-theme .storefront-menu-photo {
+  display: none;
+}
+
+[data-menu="dotted"] .storefront-theme .storefront-menu-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  padding: 0;
+}
+
+[data-menu="dotted"] .storefront-theme .storefront-menu-name {
+  grid-column: 1;
+  margin-bottom: 0;
+}
+
+/* The description belongs under the name and not beside the price, so it is
+ * pinned to the first column rather than left to flow into the second. */
+[data-menu="dotted"] .storefront-theme .storefront-menu-desc {
+  grid-column: 1;
+  margin-bottom: 0;
+}
+
+[data-menu="dotted"] .storefront-theme .storefront-menu-foot {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+  gap: 0.6rem;
+}
+
+/* The price label — the word « Prix » above the figure — is chrome a carte does
+ * not have: the column IS the price. The figure keeps its own element, so
+ * nothing about the reading order changes. */
+[data-menu="dotted"] .storefront-theme .storefront-menu-price > span:first-child {
+  display: none;
+}
+
+/* One column below 54rem, as the demos do at 860px: two columns of a carte on a
+ * phone gives about twelve characters a line. */
+@media (max-width: 54rem) {
+  [data-menu="dotted"] .storefront-theme .storefront-menu {
+    columns: 1;
+  }
+}
+
+/* The favourite toggle lives INSIDE the photo block, so it shrinks with it. At
+ * `top-4 right-4` on a 4.5rem thumbnail it lands in the middle and covers the
+ * dish; measured in Chromium before this rule, on the placeholder, where it was
+ * merely ugly — on a real photograph it hides the food. Cornered and halved
+ * rather than hidden: the demos' own `tickets` has no favourite at all, and
+ * removing a control because a template was applied is not a presentation
+ * choice. */
+[data-menu="tickets"] .storefront-theme .storefront-menu-fav {
+  top: 0.15rem;
+  right: 0.15rem;
+  height: 1.4rem;
+  width: 1.4rem;
+}
+
+[data-menu="tickets"] .storefront-theme .storefront-menu-fav svg {
+  height: 0.8rem;
+  width: 0.8rem;
+}
+
+/* The add button, at carte scale. The engine's is a 3rem filled square, which
+ * on a printed-menu line is heavier than the dish name and — measured in
+ * Chromium at 1280 — pushed past the right edge of the second column. The demo
+ * engine's `.menu-dotted .addbtn` is a 29px outlined circle, and that is the
+ * design this value is taken from.
+ *
+ * `--primary-ink` and not `--primary`: this is a WORD's worth of colour on the
+ * page's own ground rather than a fill, which is the distinction `globals.css`
+ * draws at `:root` and the reason both tokens exist. Under an establishment's
+ * branding the two part company, and using the fill here would put a colour
+ * chosen to carry white text onto a light background. */
+[data-menu="dotted"] .storefront-theme .storefront-menu-add {
+  height: 1.9rem;
+  width: 1.9rem;
+  border-radius: calc(infinity * 1px);
+  background: none;
+  border: 1.5px solid hsl(var(--primary-ink));
+  color: hsl(var(--primary-ink));
+  box-shadow: none;
+}
+
+[data-menu="dotted"] .storefront-theme .storefront-menu-add svg {
+  height: 1rem;
+  width: 1rem;
+}

@@ -1,0 +1,1446 @@
+/*
+ * chrome.css — CLIENT ZONE. Kurry Up, « La Fresque ». Owner: agent « chrome » (site/ART_DIRECTION.md § 2 and § 10).
+ * Scope: the header (« La façade »: the sign, the awning, the plaque), the phone menu (« le store » that unrolls over
+ * the swatches), the « closed » banner, the footer (the green field), the cart sheet and the dialogs (portals).
+ *
+ * Every selector starts at `.storefront-theme`, except the named exceptions: `html[data-ky-menu]:has(.storefront-theme)`
+ * (scroll lock while the phone menu is open, set by site/components/chrome/menu-behaviour.ts) and
+ * `body:has(.storefront-theme)` for the Radix overlays rendered outside the shell. The sheet and dialog contents
+ * carry `.storefront-theme` on themselves, so the --ky-* tokens exist inside them (fallbacks are written all the same).
+ * Uses the vocabulary of shared.css (masks, .ky-btn, .ky-chiffre, keyframes); a primitive that cannot be put on an
+ * engine node (no class to add) is re-declared here in its minimal form.
+ * After editing this file: toggle the trailing newline of site/theme.css, wait about 4 s.
+ *
+ * Engine markup (components/storefront/storefront-header.tsx, storefront-footer.tsx, cart-sheet.tsx):
+ *   header.fixed > div.storefront-nav > a.storefront-nav-brand, nav.storefront-nav-links, div.storefront-nav-actions,
+ *                                       div.lg:hidden (cart, burger), a.ky-entete-commande (portalled)
+ *   div.fixed.inset-0.bg-primary.lg:hidden (phone menu) > div (logo, cross, a.ky-menu-commande portalled),
+ *                                                          nav > div > a, div (account, theme)
+ *   div.fixed.top-0.h-10.z-50 (store closed banner)
+ *   footer.storefront-footer > div.max-w-7xl > div.ky-pied-promesse (portalled), div.storefront-footer-cols,
+ *                                              div.storefront-footer-note
+ *
+ * The logo is the brand's own file (public/brand/logo/kurry-up.svg, black #010000). Its tagline line is 1/17 of its
+ * height: under ~370 px wide it is not legible, so the bar and the menu paint the word alone
+ * (kurry-up-mot.svg, a crop made by site/tools/logo-variants.mjs) and the footer shows the whole lockup from 1024 px.
+ */
+
+/* ═════════════════════════════ 1. Header « La façade » ═════════════════════════════
+   The bar is the wall. On it, three painted surfaces in a row, as on the shop front of rue de Washington:
+     the sign (sage, the logo in ink)  ·  the awning (green, cream lettering with its painted shadow, the rooms and
+     the icons)  ·  the plaque (« Commander », the brand orange, ink lettering).
+   The sign and the plaque overlap the two ends of the awning. One grid row; the awning is the row's own ::before
+   (a pseudo-element of a grid container is a grid item), spanning the middle columns. Same height in both states. */
+
+.storefront-theme {
+  --ky-enseigne: var(--ky-sauge);
+  --ky-auvent: var(--ky-vert-champ);
+  --ky-auvent-levre: color-mix(in srgb, var(--ky-auvent) 70%, #000);
+  --ky-lettre-ombre: #0b140e;
+  --ky-mot-ratio: 4.256; /* width / height of kurry-up-mot.svg (555.82 × 130.6) */
+  --ky-mot-h: clamp(20px, 6.2vw, 26px);
+  --ky-enseigne-h: 50px;
+  --ky-auvent-h: 44px;
+  --ky-plaque-h: 50px;
+  --ky-rentre: 12px; /* how far the sign and the plaque overlap the awning */
+}
+
+@media (min-width: 768px) {
+  .storefront-theme {
+    --ky-mot-h: 28px;
+    --ky-enseigne-h: 54px;
+    --ky-auvent-h: 46px;
+    --ky-plaque-h: 54px;
+    --ky-rentre: 16px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-theme {
+    --ky-mot-h: 34px;
+    --ky-enseigne-h: 66px;
+    --ky-auvent-h: 54px;
+    --ky-plaque-h: 62px;
+    --ky-rentre: 20px;
+  }
+}
+
+/* The wall: the header cream (green wall in dark) with the trowel grain, opaque in both states. The engine's
+   transparent top of the home writes white text: every word of the bar is set again below. */
+.storefront-theme > header,
+.storefront-theme > header.bg-transparent {
+  background-color: var(--ky-sol-entete);
+  background-image: var(--ky-grain);
+  background-size: 240px 240px;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition: none;
+}
+
+.storefront-theme > header .storefront-nav {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: var(--ky-entete-h);
+  align-items: center;
+  height: var(--ky-entete-h);
+  /* the façade stops at 1680 px: wider screens keep bare wall on both sides */
+  padding: 0 max(var(--ky-marge-passe), calc((100% - 1680px) / 2));
+  gap: 0;
+}
+
+.storefront-theme > header .storefront-nav > * {
+  grid-row: 1;
+}
+
+/* The awning: a green coat laid with the wide brush, its lower lip a shade darker (the valance). */
+.storefront-theme > header .storefront-nav::before,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child::before {
+  content: "";
+  position: relative;
+  z-index: 0;
+  grid-row: 1;
+  grid-column: 2 / 4;
+  align-self: center;
+  height: var(--ky-auvent-h);
+  margin-inline: calc(var(--ky-rentre) * -1);
+  /* the brush is drawn 12 % wider than the awning, from its left end: the dry streaks of its right end fall
+     outside the box, and the clean cut that is left runs under the plaque */
+  margin-right: calc(var(--ky-rentre) * -1 - 24px);
+  background: linear-gradient(to bottom, var(--ky-auvent) calc(100% - 8px), var(--ky-auvent-levre) calc(100% - 8px));
+  -webkit-mask: var(--ky-brosse) left center / 112% 100% no-repeat;
+  mask: var(--ky-brosse) left center / 112% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* no plaque (cart, checkout and order pages): the awning runs to the end of the row */
+.storefront-theme > header .storefront-nav:not(:has(> .ky-entete-commande))::before,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child:not(:has(> .ky-menu-commande))::before {
+  grid-column: 2 / 5;
+  margin-right: 0;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* ── The sign: a sage board laid with the short brush, the brand's word in ink on it (7,80:1 is the paint's
+      contrast; the logo is a picture, 18,98:1 on the wall). No tagline beside it. ── */
+.storefront-theme > header .storefront-nav-brand,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > span {
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ky-enseigne-h);
+  min-width: 44px;
+  padding: 0 calc(var(--ky-mot-h) * 0.85);
+  color: var(--ky-encre);
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: none;
+  translate: none;
+}
+
+.storefront-theme > header .storefront-nav-brand::before,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-enseigne);
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* The logo: the <img> keeps its alt text and gives the box its size; the word is painted through a mask of the
+   cropped file, so it is ink on the sage in both colour schemes. */
+.storefront-theme :is(header .storefront-nav-brand, div.fixed.inset-0.bg-primary > div:first-child > span) > img {
+  display: block;
+  height: var(--ky-mot-h);
+  width: calc(var(--ky-mot-h) * var(--ky-mot-ratio));
+  max-width: none;
+  filter: none;
+}
+
+.storefront-theme :is(header .storefront-nav-brand, div.fixed.inset-0.bg-primary > div:first-child > span) > img[src*="/brand/logo/kurry-up"] {
+  opacity: 0;
+}
+
+/* While the CMS is still loading (no <img> yet, or the name in text), the same word is painted: the sign never
+   shows empty or changes size. The text stays the link's accessible name. */
+.storefront-theme :is(header .storefront-nav-brand, div.fixed.inset-0.bg-primary > div:first-child > span):not(:has(> img)) {
+  min-width: calc(var(--ky-mot-h) * var(--ky-mot-ratio) + var(--ky-mot-h) * 1.7);
+  color: transparent;
+  font-size: 0;
+}
+
+.storefront-theme :is(header .storefront-nav-brand, div.fixed.inset-0.bg-primary > div:first-child > span):is(:has(> img[src*="/brand/logo/kurry-up"]), :not(:has(> img)))::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--ky-mot-h) * var(--ky-mot-ratio));
+  height: var(--ky-mot-h);
+  translate: -50% -50%;
+  background: var(--ky-logo);
+  -webkit-mask: url("/brand/logo/kurry-up-mot.svg") center / 100% 100% no-repeat;
+  mask: url("/brand/logo/kurry-up-mot.svg") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme > header .storefront-nav-brand:focus-visible {
+  outline: 3px solid var(--ky-focus);
+  outline-offset: 2px;
+}
+
+/* ── The plaque: « Commander » (portalled by ChromeEffects), the brand orange, ink lettering with the painted
+      light edge of the shop's plaque. Always shown, at every width. ── */
+.storefront-theme :is(header .ky-entete-commande, div.fixed.inset-0.bg-primary .ky-menu-commande) {
+  position: relative;
+  z-index: 2;
+  grid-column: 4;
+  display: inline-flex;
+  min-height: var(--ky-plaque-h);
+  padding: 0 clamp(14px, 1.6vw, 30px);
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0.07em 0.07em 0 rgb(255 196 150 / 0.75);
+}
+
+@media (min-width: 768px) {
+  .storefront-theme :is(header .ky-entete-commande, div.fixed.inset-0.bg-primary .ky-menu-commande) {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-theme > header .ky-entete-commande {
+    font-size: 1rem;
+    letter-spacing: 0.07em;
+  }
+}
+
+/* ── On the awning: the icons and every word are cream, the focus ring the light orange (6,2:1 on the green) ── */
+.storefront-theme > header .storefront-nav :is(.storefront-nav-links, .storefront-nav-actions, div.lg\:hidden),
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button {
+  --ky-focus: var(--ky-orange-clair);
+  position: relative;
+  z-index: 1;
+}
+
+.storefront-theme > header .storefront-nav :is(button, a[data-slot="button"]),
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ky-badigeon);
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme > header .storefront-nav :is(button, a[data-slot="button"]) svg,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button svg {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  filter: drop-shadow(1px 1px 0 var(--ky-lettre-ombre));
+}
+
+.storefront-theme > header .storefront-nav :is(button, a[data-slot="button"]):hover,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button:hover {
+  background: rgb(253 243 218 / 0.14);
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme > header .storefront-nav :is(button, a[data-slot="button"]):focus-visible,
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button:focus-visible {
+  outline: 3px solid var(--ky-orange-clair);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+/* The account: an icon on the awning (its words stay its accessible name). */
+.storefront-theme > header .storefront-nav-actions > a[href="/sign-in"] {
+  font-size: 0;
+  gap: 0;
+}
+
+/* The basket count: an ochre tag with ink figures (the engine's `bg-accent-solid` is the awning's own green). */
+.storefront-theme > header .storefront-nav button > span.absolute {
+  top: 1px;
+  right: -1px;
+  min-width: 20px;
+  width: auto;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Phone, tablet and the compact bar up to 1279 px: sign · awning (basket, burger) · plaque ── */
+.storefront-theme > header .storefront-nav > div.lg\:hidden {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 calc(var(--ky-rentre) + 2px) 0 6px;
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .storefront-theme > header .storefront-nav > :is(.storefront-nav-links, .storefront-nav-actions) {
+    display: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .storefront-theme {
+    --ky-mot-h: 19px;
+    --ky-rentre: 9px;
+  }
+
+  .storefront-theme :is(header .ky-entete-commande, div.fixed.inset-0.bg-primary .ky-menu-commande) {
+    padding-inline: 11px;
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+}
+
+/* ── From 1280 px: the rooms are lettered on the awning, after the sign; the icons close it, before the plaque.
+      Shown by address (home, blog, booking and any other link stay in the footer and the phone menu). ── */
+@media (min-width: 1280px) {
+  .storefront-theme > header .storefront-nav > div.lg\:hidden {
+    display: none;
+  }
+
+  .storefront-theme > header .storefront-nav-links {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: clamp(14px, 2.2vw, 44px);
+    min-width: 0;
+    padding-left: calc(var(--ky-rentre) + clamp(18px, 2vw, 34px));
+  }
+
+  .storefront-theme > header .storefront-nav-links > a {
+    position: relative;
+    isolation: isolate;
+    display: none;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 0.5em;
+    color: var(--ky-badigeon);
+    font-family: var(--ky-font-texte);
+    font-weight: 800;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0.1em 0.1em 0 var(--ky-lettre-ombre);
+  }
+
+  .storefront-theme > header .storefront-nav-links > :is(a[href="/menu"], a[href*="creation"], a[href="/restaurants"], a[href="/about"], a[href="/contact"]) {
+    display: inline-flex;
+  }
+
+  .storefront-theme > header .storefront-nav-links > a:hover {
+    color: var(--ky-badigeon);
+  }
+
+  .storefront-theme > header .storefront-nav-links > a:focus-visible {
+    outline: 3px solid var(--ky-orange-clair);
+    outline-offset: 0;
+  }
+
+  /* Active room: the engine's underline span becomes an ochre pass laid behind the word, ink lettering (7,08:1). */
+  .storefront-theme > header .storefront-nav-links > a:has(> span) {
+    color: var(--ky-encre);
+    text-shadow: none;
+  }
+
+  .storefront-theme > header .storefront-nav-links > a > span {
+    top: 7px;
+    bottom: 7px;
+    left: 0;
+    right: 0;
+    height: auto;
+    z-index: -1;
+    border-radius: 0;
+    background: var(--ky-ocre);
+    -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+    mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  }
+
+  /* Hover and focus: a short ochre trace under the cream letters. */
+  .storefront-theme > header .storefront-nav-links > a:not(:has(> span))::after {
+    content: "";
+    position: absolute;
+    left: 0.35em;
+    right: 0.35em;
+    bottom: 8px;
+    height: 0.32em;
+    z-index: -1;
+    background: var(--ky-ocre);
+    -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+    mask: var(--ky-brosse) center / 100% 100% no-repeat;
+    transform-origin: left center;
+    opacity: 0;
+  }
+
+  .storefront-theme > header .storefront-nav-links > a:not(:has(> span)):is(:hover, :focus-visible)::after {
+    opacity: 1;
+  }
+
+  /* The icons (colour scheme, basket, account), at the end of the awning. */
+  .storefront-theme > header .storefront-nav-actions {
+    grid-column: 3;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 calc(var(--ky-rentre) + 10px) 0 12px;
+  }
+}
+
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  .storefront-theme > header .storefront-nav-links > a:not(:has(> span))::after {
+    opacity: 1;
+    transform: scaleX(0);
+    transition: transform var(--ky-t-couche) var(--ky-ease);
+  }
+
+  .storefront-theme > header .storefront-nav-links > a:not(:has(> span)):is(:hover, :focus-visible)::after {
+    transform: scaleX(1);
+  }
+}
+
+/* ── The engine's « closed » banner: fixed, z-50, 40 px; its 5 % red ground let the page show through. Opaque
+      header cream here, the engine's red words kept (light 5,4:1, dark 6,09:1 on the green wall). ── */
+.storefront-theme > div.fixed.top-0.h-10.z-50 {
+  background: var(--ky-sol-entete);
+  border-bottom: 1px solid color-mix(in srgb, hsl(var(--destructive)) 30%, var(--ky-sol-entete));
+  padding-inline: 12px;
+}
+
+.storefront-theme > div.fixed.top-0.h-10.z-50 > div {
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 0;
+  max-width: 100%;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .storefront-theme > div.fixed.top-0.h-10.z-50 > div {
+    font-size: 0.6875rem;
+    letter-spacing: 0.03em;
+  }
+}
+
+/* ═════════════════════════════ 2. The phone menu « le store » ═════════════════════════════
+   The top row is the bar itself (sign · awning with the cross · plaque), so opening the menu changes only the
+   burger into a cross: the awning then unrolls down the screen (clip-path from the top) and uncovers the wall,
+   where each room is a test swatch of the mural's paints, a brush stroke laid left then right, one after the
+   other. A swatch is a light wash of its paint; the room you are in, and the one under the finger or the focus,
+   is painted in full. */
+
+/* Shown up to 1279 px (the engine hides it from 1024: the compact bar keeps it). */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .storefront-theme > div.fixed.inset-0.bg-primary {
+    display: flex;
+  }
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary {
+  --ky-menu-pad: max(calc(var(--ky-marge-passe) + 8px), calc((100% - 640px) / 2));
+  isolation: isolate;
+  background-color: var(--ky-sol);
+  background-image: var(--ky-grain);
+  background-size: 240px 240px;
+  color: var(--ky-texte);
+  /* framer slides it in from the right; here it unrolls from the top (ky-chrome-store) */
+  transform: none !important;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Store closed: the banner (z-50) holds the top 40 px; the panel starts under it. */
+.storefront-theme:has(> div.fixed.top-0.h-10.z-50) > div.fixed.inset-0.bg-primary {
+  top: 40px;
+}
+
+/* Top row: the same grid as the bar, the same wall behind it. */
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: var(--ky-entete-h);
+  align-items: center;
+  height: var(--ky-entete-h);
+  margin: 0;
+  padding: 0 var(--ky-marge-passe);
+  gap: 0;
+  background-color: var(--ky-sol-entete);
+  background-image: var(--ky-grain);
+  background-size: 240px 240px;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > * {
+  grid-row: 1;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button {
+  grid-column: 3;
+  justify-self: end;
+  margin-right: calc(var(--ky-rentre) + 2px);
+}
+
+/* without the plaque (cart, checkout and order pages have none in the bar either) */
+.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child:not(:has(> .ky-menu-commande)) > button {
+  grid-column: 4;
+  margin-right: 6px;
+}
+
+/* The rooms: swatches on the wall, Bungee, one per line, alternately from the left and from the right. */
+.storefront-theme > div.fixed.inset-0.bg-primary > nav {
+  flex: 1 0 auto;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(6px, 1.4svh, 14px);
+  padding: 24px var(--ky-menu-pad);
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div {
+  /* framer's own entrance (a slide from the right) is neutralised; the room arrives with ky-jet below */
+  display: flex;
+  opacity: 1 !important;
+  transform: none !important;
+  --ky-nuance: var(--ky-ocre);
+  --ky-nuance-texte: var(--ky-encre);
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(even) {
+  justify-content: flex-end;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(4n + 2) { --ky-nuance: var(--ky-sauge); }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(4n + 3) { --ky-nuance: var(--ky-vert-champ); --ky-nuance-texte: var(--ky-badigeon); }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(4n + 4) { --ky-nuance: var(--ky-charbon); --ky-nuance-texte: var(--ky-badigeon); }
+
+/* on the green wall the green and the charcoal would vanish: lime cream and the sage-grey of the fields instead */
+.dark .storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(4n + 3) { --ky-nuance: var(--ky-chaux); --ky-nuance-texte: var(--ky-charbon); }
+.dark .storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(4n + 4) { --ky-nuance: #86a08d; --ky-nuance-texte: var(--ky-encre); }
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(2) { --ky-rang: 1; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(3) { --ky-rang: 2; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(4) { --ky-rang: 3; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(5) { --ky-rang: 4; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(6) { --ky-rang: 5; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(7) { --ky-rang: 6; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(8) { --ky-rang: 7; }
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(9) { --ky-rang: 8; }
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.3em 0.6em 0.24em;
+  color: var(--ky-texte);
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  font-size: clamp(1.75rem, 8.4vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+/* the swatch: a wash of the paint (charcoal letters at 5,4:1 or more in light, cream at 7:1 or more in dark) */
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--ky-nuance) 34%, transparent);
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div:nth-child(even) > a::before {
+  transform: scaleX(-1);
+}
+
+/* the room you are in (the engine marks it `.underline`), and the one under the finger or the focus: in full */
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a:is(.underline, :hover, :focus-visible) {
+  color: var(--ky-nuance-texte);
+  text-decoration: none;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a:is(.underline, :hover, :focus-visible)::before {
+  background: var(--ky-nuance);
+}
+
+/* Account and colour scheme: charcoal on the wall, no frame around the round switch. */
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) {
+  flex: none;
+  gap: 8px;
+  padding: 8px var(--ky-menu-pad) calc(var(--ky-marge-passe) + max(20px, env(safe-area-inset-bottom)));
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) > :is(a, button) {
+  height: 44px;
+  min-width: 44px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ky-texte);
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) > a[href="/sign-in"] {
+  position: relative;
+  isolation: isolate;
+  padding: 0 4px;
+  margin-right: 8px;
+  border-radius: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) > a[href="/sign-in"]::after {
+  content: "";
+  position: absolute;
+  left: -0.2em;
+  right: -0.2em;
+  bottom: 0.45rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) > button {
+  width: 44px;
+  border-radius: 999px;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) > :is(a, button):hover {
+  background: var(--ky-sol-charge);
+  color: var(--ky-texte);
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary > div:nth-child(3) svg {
+  width: 20px;
+  height: 20px;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary [data-slot="avatar"] {
+  border: 0;
+}
+
+.storefront-theme > div.fixed.inset-0.bg-primary :focus-visible {
+  outline: 3px solid var(--ky-focus);
+  outline-offset: 3px;
+}
+
+/* A short screen (phone in landscape): smaller rooms, two columns when wide enough. */
+@media (max-height: 560px) {
+  .storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a {
+    font-size: clamp(1.5rem, 7vh, 2rem);
+  }
+}
+
+@media (max-height: 560px) and (min-width: 600px) {
+  .storefront-theme > div.fixed.inset-0.bg-primary > nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+    align-content: center;
+  }
+}
+
+/* Motion: the awning unrolls from the top (the top row is the bar, it does not move), the swatches are painted one
+   after the other, left then right; the close rolls it back up (`data-ky-sortie`, menu-behaviour.ts). */
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-theme > div.fixed.inset-0.bg-primary {
+    animation: ky-chrome-store var(--ky-t-menu) var(--ky-ease) both;
+  }
+
+  .storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) both;
+    animation-delay: calc(160ms + var(--ky-rang, 0) * 55ms);
+  }
+
+  .storefront-theme > div.fixed.inset-0.bg-primary > nav > div > a::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) both;
+    animation-delay: calc(200ms + var(--ky-rang, 0) * 55ms);
+  }
+
+  .storefront-theme > div.fixed.inset-0.bg-primary[data-ky-sortie] {
+    animation: ky-chrome-store-ferme 240ms var(--ky-ease-couche) both;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storefront-theme > div.fixed.inset-0.bg-primary[data-ky-sortie] {
+    visibility: hidden;
+  }
+}
+
+@keyframes ky-chrome-store {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes ky-chrome-store-ferme {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+/* The page under the open menu does not scroll. */
+html[data-ky-menu]:has(.storefront-theme) {
+  overflow: hidden;
+}
+
+/* ═════════════════════════════ 3. Footer: the green field ═════════════════════════════ */
+
+/* A whole green coat laid on the wall, its brushed edges inset from the screen edge (--ky-marge-passe); the same
+   tokens as `.ky-champ--vert` (the engine's footer takes no class). */
+.storefront-theme footer.storefront-footer {
+  --ky-texte: var(--ky-badigeon);
+  --ky-texte-2: var(--ky-creme-ombre);
+  --ky-mot: var(--ky-orange-clair);
+  --ky-focus: var(--ky-orange-clair);
+  --ky-chiffre-couleur: var(--ky-ocre);
+  --foreground: 43 89.7% 92.4%;
+  --muted-foreground: 45 27.3% 74.1%;
+  --primary-ink: 23 100% 68%;
+  --ky-pied-filet: rgb(253 243 218 / 0.16);
+  position: relative;
+  isolation: isolate;
+  margin: clamp(2.5rem, 6vw, 5rem) var(--ky-marge-passe) var(--ky-marge-passe);
+  padding: clamp(3.5rem, 7vw, 6rem) clamp(1.25rem, 5vw, 4.5rem) clamp(2.25rem, 4vw, 3.25rem);
+  background: transparent;
+  color: var(--ky-texte);
+  view-timeline: --ky-pied block;
+}
+
+.storefront-theme footer.storefront-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme footer.storefront-footer > div.max-w-7xl {
+  display: flex;
+  flex-direction: column;
+  max-width: 1240px;
+}
+
+/* every engine word on the field: cream (the engine writes them in --primary-foreground, ink) */
+.storefront-theme footer.storefront-footer .text-primary-foreground {
+  color: var(--ky-badigeon);
+}
+
+/* ── The painted promise (portalled): « 10 MIN » and « 1 H » in ochre, the sentence in full under them ── */
+.storefront-theme footer.storefront-footer .ky-pied-promesse {
+  order: -1;
+  display: grid;
+  gap: 14px;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--ky-pied-filet);
+  view-timeline: --ky-jet block;
+}
+
+/* The brand's logo in cream on the green (portalled, decorative: the shop's name is the heading below). The whole
+   lockup from 1024 px, where its « INDIAN STREET FOOD » line is 7 px high or more; the word alone below. */
+.storefront-theme footer.storefront-footer .ky-pied-logo {
+  display: block;
+  width: min(100%, clamp(13.5rem, 52vw, 18rem));
+  height: auto;
+  margin-bottom: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.storefront-theme footer.storefront-footer .ky-pied-logo--complet {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme footer.storefront-footer .ky-pied-logo--mot {
+    display: none;
+  }
+
+  .storefront-theme footer.storefront-footer .ky-pied-logo--complet {
+    display: block;
+    width: clamp(24rem, 32vw, 28rem);
+  }
+}
+
+.storefront-theme footer.storefront-footer .ky-pied-promesse__chiffres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: clamp(1.75rem, 5vw, 4.5rem);
+  row-gap: 0.5rem;
+}
+
+.storefront-theme footer.storefront-footer .ky-pied-promesse__chiffre {
+  margin: 0;
+  font-size: clamp(3.75rem, 10vw, 8rem);
+  white-space: nowrap;
+}
+
+.storefront-theme footer.storefront-footer .ky-pied-promesse__chiffre .ky-chiffre__unite {
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme footer.storefront-footer .ky-pied-promesse__phrase {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--ky-badigeon);
+  text-wrap: balance;
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
+  line-height: 1.4;
+}
+
+/* ── Columns ── */
+.storefront-theme footer.storefront-footer .storefront-footer-cols {
+  gap: 44px 40px;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-cols > div {
+  min-width: 0;
+}
+
+/* The brand: the name in Bungee, the tagline under it. */
+.storefront-theme footer.storefront-footer .storefront-footer-brand {
+  margin-bottom: 12px;
+  color: var(--ky-badigeon);
+  font-family: var(--ky-font-titre);
+  font-size: clamp(1.75rem, 2.4vw, 2.125rem);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-cols > div:first-child > p {
+  color: var(--ky-creme-ombre);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-cols > div:first-child svg {
+  color: var(--ky-ocre);
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-cols > div:first-child span {
+  color: var(--ky-badigeon);
+  font-size: 0.9375rem;
+}
+
+/* Column titles: the eyebrow (an ochre brush dab, then Mukta 800 capitals), no rule under them. */
+.storefront-theme footer.storefront-footer h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 20px;
+  padding-bottom: 0;
+  border: 0;
+  color: var(--ky-creme-ombre);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.storefront-theme footer.storefront-footer h3::before {
+  content: "";
+  flex: none;
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-ocre);
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* Links: cream, an ochre trace laid under the word on hover. */
+.storefront-theme footer.storefront-footer .storefront-footer-cols nav {
+  gap: 2px;
+}
+
+.storefront-theme footer.storefront-footer nav a {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 36px;
+  color: var(--ky-badigeon);
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.storefront-theme footer.storefront-footer nav a::after {
+  content: "";
+  position: absolute;
+  left: -0.15em;
+  right: -0.15em;
+  bottom: 0.3rem;
+  height: 0.36em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transform-origin: left center;
+  opacity: 0;
+}
+
+.storefront-theme footer.storefront-footer nav a:is(:hover, :focus-visible)::after {
+  opacity: 0.85;
+}
+
+/* Under the ochre trace the word stays cream on the green around it; on the trace itself it would read ink. The
+   trace sits under the baseline, so the letters stay on the green. */
+.storefront-theme footer.storefront-footer nav a:hover {
+  text-decoration: none;
+}
+
+/* « Ouvrir un Kurry Up » (/franchise): its only link on the site, discreet, set apart at the foot of its column. */
+.storefront-theme footer.storefront-footer nav a[href="/franchise"] {
+  margin-top: 14px;
+  color: var(--ky-creme-ombre);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.storefront-theme footer.storefront-footer nav a[href="/franchise"]:hover {
+  color: var(--ky-badigeon);
+}
+
+/* ── Newsletter: a field with a sage-grey edge (4,40:1 on #233929, 3,65:1 on #2D4634), the orange brush inside ── */
+.storefront-theme footer.storefront-footer .storefront-footer-cols > div:last-child > p {
+  color: var(--ky-creme-ombre);
+  font-size: 0.9375rem;
+}
+
+.storefront-theme footer.storefront-footer form input {
+  height: 56px;
+  padding-left: 16px;
+  border: 1px solid #86a08d;
+  border-radius: var(--ky-r-ctrl);
+  background: transparent;
+  box-shadow: none;
+  color: var(--ky-badigeon);
+  font-family: var(--ky-font-texte);
+  font-size: 0.9375rem;
+}
+
+.storefront-theme footer.storefront-footer form input::placeholder {
+  color: var(--ky-creme-ombre);
+  opacity: 1;
+}
+
+.storefront-theme footer.storefront-footer form input:focus-visible {
+  border-color: var(--ky-orange-clair);
+  outline: 3px solid var(--ky-orange-clair);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+.storefront-theme footer.storefront-footer form input[aria-invalid="true"] {
+  border-color: var(--ky-orange-clair);
+}
+
+.storefront-theme footer.storefront-footer form button[type="submit"] {
+  isolation: isolate;
+  right: 6px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ky-encre);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.storefront-theme footer.storefront-footer form button[type="submit"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme footer.storefront-footer form button[type="submit"]:hover {
+  color: var(--ky-encre);
+}
+
+.storefront-theme footer.storefront-footer form button[type="submit"]:hover::before {
+  background: var(--ky-orange-vif);
+}
+
+.storefront-theme footer.storefront-footer form [role="alert"] {
+  color: var(--ky-badigeon);
+}
+
+/* ── The bottom line: copyright and legal links in small type, the networks as bare icons, the picture credit ── */
+.storefront-theme footer.storefront-footer .storefront-footer-note {
+  flex-wrap: wrap;
+  margin-top: clamp(2.75rem, 5vw, 4rem);
+  padding-top: 24px;
+  border-top: 1px solid var(--ky-pied-filet);
+  row-gap: 14px;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-note > p {
+  text-align: center;
+  color: var(--ky-creme-ombre);
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-note nav a {
+  min-height: 32px;
+  color: var(--ky-creme-ombre);
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-note nav a:hover {
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-note a[aria-label] {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ky-badigeon);
+  transition: color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-note a[aria-label] svg {
+  width: 22px;
+  height: 22px;
+}
+
+.storefront-theme footer.storefront-footer .storefront-footer-note a[aria-label]:hover {
+  color: var(--ky-ocre);
+}
+
+.storefront-theme footer.storefront-footer :focus-visible {
+  outline: 3px solid var(--ky-orange-clair);
+  outline-offset: 3px;
+}
+
+/* The credit of the pictures, on every page (the legal notice says it in full). */
+.storefront-theme footer.storefront-footer .storefront-footer-note::after {
+  content: "Illustrations générées par IA";
+  flex-basis: 100%;
+  color: var(--ky-creme-ombre);
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .storefront-theme footer.storefront-footer .storefront-footer-note::after {
+    text-align: left;
+  }
+}
+
+/* Motion: the field is painted as it enters (the brush, left to right), the two numbers arrive one after the
+   other, the hover traces push from the left. Already painted without `animation-timeline` and under reduce. */
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-theme footer.storefront-footer nav a::after {
+    opacity: 0.85;
+    transform: scaleX(0);
+    transition: transform var(--ky-t-couche) var(--ky-ease);
+  }
+
+  .storefront-theme footer.storefront-footer nav a:is(:hover, :focus-visible)::after {
+    transform: scaleX(1);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .storefront-theme footer.storefront-footer::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-pied;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .storefront-theme footer.storefront-footer .ky-pied-promesse__chiffre {
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-jet;
+      animation-range: entry calc(5% + var(--i, 0) * 8%) entry calc(50% + var(--i, 0) * 8%);
+    }
+  }
+}
+
+/* ═════════════════════════════ 4. Portals: the cart sheet, the dish dialog, the overlays ═════════════════════════════ */
+
+body:has(.storefront-theme) :is([data-slot="sheet-overlay"], [data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) {
+  background: rgb(31 23 18 / 0.45);
+}
+
+/* ── The cart: a cream slab, whole (12 px off every edge), no border ── */
+.storefront-theme[data-slot="sheet-content"][data-side="right"],
+.storefront-theme[data-slot="sheet-content"].inset-y-0.right-0 {
+  top: 12px;
+  bottom: 12px;
+  right: 12px;
+  height: auto;
+  width: calc(100% - 24px);
+  max-width: 440px;
+  border: 0;
+  border-radius: var(--ky-r-dalle, 14px);
+  background: var(--ky-dalle, #fff9ec);
+  background-image: none;
+  box-shadow: 0 28px 60px -24px rgb(31 23 18 / 0.45);
+  overflow: clip;
+}
+
+/* its head: the title in Bungee on the slab, the bag on a short ochre dab */
+.storefront-theme[data-slot="sheet-content"] > div:first-child {
+  padding: 22px 16px 18px 24px;
+  background: transparent;
+  color: var(--ky-texte, #373737);
+  border-bottom: 1px solid var(--ky-filet-deco, #e8d4a6);
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child .rounded-2xl {
+  position: relative;
+  isolation: isolate;
+  width: 48px;
+  height: 44px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ky-encre, #1f1712);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child .rounded-2xl::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-ocre, #e49142);
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child .rounded-2xl svg {
+  width: 22px;
+  height: 22px;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-slot="sheet-title"] {
+  color: var(--ky-texte, #373737);
+  font-family: var(--ky-font-titre, Impact, sans-serif);
+  font-size: 1.75rem;
+  line-height: 1;
+  letter-spacing: 0.005em;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-slot="sheet-description"] {
+  margin-top: 6px;
+  color: var(--ky-texte-2, #5f5850);
+  font-family: var(--ky-font-texte, system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+/* « Tout vider » and the close cross: quiet, no frame */
+.storefront-theme[data-slot="sheet-content"] > div:first-child button {
+  background: transparent;
+  color: var(--ky-texte, #373737);
+  box-shadow: none;
+  border: 0;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child button:hover {
+  background: var(--ky-sol-charge, #f6e6bf);
+  color: var(--ky-texte, #373737);
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child button[data-variant="ghost"] {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--ky-r-ctrl, 6px);
+  color: var(--ky-texte-2, #5f5850);
+  font-family: var(--ky-font-texte, system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child button[aria-label]:not([data-variant]) {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div:first-child button[aria-label]:not([data-variant]) svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* the bag tile pushed the title on two lines: the title alone carries the head */
+.storefront-theme[data-slot="sheet-content"] > div:first-child .rounded-2xl {
+  display: none;
+}
+
+/* the lines: soft tiles, no border; steppers and the remove cross at 36 px */
+.storefront-theme[data-slot="sheet-content"] [data-line-id] > div:first-child {
+  border: 0;
+  border-radius: var(--ky-r-photo, 10px);
+  background: var(--ky-sol-charge, #f6e6bf);
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-line-id] h3 {
+  font-family: var(--ky-font-texte, system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-line-id] p.text-accent-foreground,
+.storefront-theme[data-slot="sheet-content"] [data-line-id] span.tracking-widest {
+  font-family: var(--ky-font-texte, system-ui, sans-serif);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-line-id] div.rounded-lg.border {
+  border: 0;
+  border-radius: var(--ky-r-ctrl, 6px);
+  background: var(--ky-sol-charge, #f6e6bf);
+  padding: 0;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-line-id] div.rounded-lg.border > button,
+.storefront-theme[data-slot="sheet-content"] [data-line-id] button[aria-label^="Retirer"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ky-r-ctrl, 6px);
+  color: var(--ky-texte, #373737);
+  box-shadow: none;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-line-id] div.rounded-lg.border > button:hover,
+.storefront-theme[data-slot="sheet-content"] [data-line-id] button[aria-label^="Retirer"]:hover {
+  background: var(--ky-peche, #fbe3c4);
+  color: var(--ky-encre, #1f1712);
+  box-shadow: none;
+}
+
+.dark .storefront-theme[data-slot="sheet-content"] [data-line-id] div.rounded-lg.border > button:hover,
+.dark .storefront-theme[data-slot="sheet-content"] [data-line-id] button[aria-label^="Retirer"]:hover {
+  background: var(--ky-vert, #233929);
+  color: var(--ky-badigeon, #fdf3da);
+}
+
+/* the body of the slab */
+.storefront-theme[data-slot="sheet-content"] > div.flex-1 {
+  background: transparent;
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-slot="empty-icon"] {
+  background: var(--ky-sol-charge, #f6e6bf);
+  color: var(--ky-texte, #373737);
+}
+
+.storefront-theme[data-slot="sheet-content"] [data-slot="empty-title"] {
+  font-family: var(--ky-font-texte, system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+/* the foot of the slab (total, « Commander »): the heavier wash under it, no rule; the total as the price type */
+.storefront-theme[data-slot="sheet-content"] > div.border-t {
+  border-top: 0;
+  background: var(--ky-sol-charge, #f6e6bf);
+}
+
+.storefront-theme[data-slot="sheet-content"] > div.border-t span {
+  font-family: var(--ky-font-texte, system-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div.border-t span.text-xl {
+  font-weight: 800;
+  font-size: 1.125rem;
+  letter-spacing: 0.04em;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div.border-t span.text-2xl {
+  font-weight: 700;
+  font-size: 1.75rem;
+  letter-spacing: 0;
+}
+
+/* « Commander maintenant »: the brushed orange, ink label (shared .ky-btn, re-declared: the engine's button takes
+   no class) */
+.storefront-theme[data-slot="sheet-content"] > div.border-t [data-slot="button"] {
+  position: relative;
+  isolation: isolate;
+  height: 56px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ky-encre, #1f1712);
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.storefront-theme[data-slot="sheet-content"] > div.border-t [data-slot="button"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange, #ea5800);
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche, 160ms) var(--ky-ease-couche, ease);
+}
+
+.storefront-theme[data-slot="sheet-content"] > div.border-t [data-slot="button"]:hover::before {
+  background: var(--ky-orange-vif, #ff6a12);
+}
+
+.storefront-theme[data-slot="sheet-content"] > div.border-t [data-slot="button"]:disabled::before {
+  background: var(--ky-champ, #8f7c57);
+}
+
+/* ── The dish dialog and the other dialogs: a cream slab, no border, a 44 px cross ── */
+.storefront-theme[data-slot="dialog-content"] {
+  border: 0;
+  border-radius: var(--ky-r-dalle, 14px);
+  background-color: var(--ky-dalle, #fff9ec);
+  background-image: none;
+  box-shadow: 0 28px 60px -24px rgb(31 23 18 / 0.45);
+}
+
+.storefront-theme[data-slot="dialog-content"] > [data-slot="dialog-close"] {
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--ky-dalle, #fff9ec);
+  color: var(--ky-texte, #373737);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.storefront-theme[data-slot="dialog-content"] > [data-slot="dialog-close"]:hover {
+  background: var(--ky-sol-charge, #f6e6bf);
+}
+
+.storefront-theme[data-slot="dialog-content"] > [data-slot="dialog-close"] svg {
+  width: 20px;
+  height: 20px;
+}
+
+.storefront-theme[data-slot="dialog-content"] > [data-slot="dialog-close"]:focus-visible {
+  outline: 3px solid var(--ky-focus, #c24a00);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* menus and tooltips: the slab, a short warm shadow, no border */
+.storefront-theme:is([data-slot="dropdown-menu-content"], [data-slot="popover-content"], [data-slot="select-content"]) {
+  border: 0;
+  border-radius: var(--ky-r-ctrl, 6px);
+  background-color: var(--ky-dalle, #fff9ec);
+  background-image: none;
+  box-shadow: 0 18px 36px -18px rgb(31 23 18 / 0.4);
+}

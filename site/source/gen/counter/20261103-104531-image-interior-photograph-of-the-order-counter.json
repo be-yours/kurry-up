@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:45:31.256Z",
+  "modality": "image",
+  "prompt": "Interior photograph of the order counter of a bright, modern Indian street food restaurant, daylight from a window on the left, airy and light (not dark), eye-level three-quarter view. A long counter in warm light wood with a brushed-steel hot display holding gastronorm trays of orange butter chicken curry, green palak curry, yellow dal, basmati rice, and small steel pots of colourful toppings (red onion, cucumber, tomato, coriander, peanuts, mint). A neat stack of deep-green ceramic bowls and a basket of folded naan on the counter. Behind it a cream lime-wash plaster wall with big flat fields of painted orange, forest green and ochre colour, pendant lamps, open shelves with jars of spices. No people, no hands. Absolutely no text, no letters, no numbers, no menu board writing, no logos, no brand marks, no price tags. Original design, not a copy of any real restaurant. Realistic photography, sharp, natural appetising colours.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "Interior photograph of the order counter of a bright, modern Indian street food restaurant, daylight from a window on the left, airy and light (not dark), eye-level three-quarter view. A long counter in warm light wood with a brushed-steel hot display holding gastronorm trays of orange butter chicken curry, green palak curry, yellow dal, basmati rice, and small steel pots of colourful toppings (red onion, cucumber, tomato, coriander, peanuts, mint). A neat stack of deep-green ceramic bowls and a basket of folded naan on the counter. Behind it a cream lime-wash plaster wall with big flat fields of painted orange, forest green and ochre colour, pendant lamps, open shelves with jars of spices. No people, no hands. Absolutely no text, no letters, no numbers, no menu board writing, no logos, no brand marks, no price tags. Original design, not a copy of any real restaurant. Realistic photography, sharp, natural appetising colours.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2048x1152",
+    "count": 1,
+    "referenceImages": 0
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/counter/20261103-104531-image-interior-photograph-of-the-order-counter.png",
+      "mediaType": "image/png",
+      "bytes": 4059318
+    }
+  ]
+}

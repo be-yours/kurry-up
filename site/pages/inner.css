@@ -1,0 +1,2630 @@
+/* inner.css : fichier de page de La Fresque, propriétaire voir site/ART_DIRECTION.md §2. Tout sélecteur commence par .storefront-theme. */
+
+/*
+ * Owner: the « pages intérieures » agent. Pages: /about, /contact, /blog, /blog/[slug], /mentions-legales,
+ * /cgv, /confidentialite, /cart, /checkout (+ /checkout/success|cancel|pay), /order/[orderId], /track/[token],
+ * /account/*, /sign-in, /sign-up (and the other (auth) screens), the storefront 404.
+ *
+ * Every page here is the ENGINE's markup: nothing can add a node, so the paint of « La Fresque » is laid on
+ * the engine's own boxes through `::before` / `::after`, with the masks, keyframes and tokens of shared.css
+ * (`--ky-brosse*`, `ky-peint`, `ky-jet`, `--ky-*`). Nothing of shared.css is redefined here.
+ *
+ * Page anchors (the engine writes no slug on its pages; each anchor is a node only that page renders):
+ *   /about      main:has(div.rounded-[3rem].border-8.border-white)   the story photo frame (home's is border-white/5)
+ *   /contact    main:has(#contact-name)                              the form's name field
+ *   /blog       main:has(.lucide-book-open)                          « Tous les articles » icon
+ *   /blog/[slug] main > div.min-h-screen > article.max-w-3xl
+ *   legal       main > main.max-w-3xl                                 the three legal pages
+ *   account     main:has(a[href^="/account"]) with the 8rem head      (the carte shares that head: excluded by its search field)
+ *   auth        .storefront-theme > div.min-h-screen.relative.flex   no header, no main
+ *   404         [data-testid="storefront-not-found"]
+ *
+ * Tailwind's utilities live in `@layer utilities`; this file is unlayered, so a rule here wins over any
+ * utility whatever its specificity. Inline styles (framer-motion) still win: they are left alone.
+ *
+ * Default state = final state. Load-time paint only in `prefers-reduced-motion: no-preference`; scroll paint
+ * only inside `@supports (animation-timeline: view())`. Nothing in a form waits for an animation.
+ */
+
+/* ════════════════════════════ 0. Token sets of the group ════════════════════════════ */
+
+/* LOCAL EQUIVALENT of `.ky-champ--ocre|sauge|orange` for engine boxes that cannot carry the class (shared.css
+   has no mixin for the engine's own markup). Ink text on a light paint: role tokens + the engine text tokens
+   their utilities read (`text-foreground`, `text-muted-foreground`, `text-primary-foreground`,
+   `text-accent-foreground`, `text-primary-ink`). */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section.bg-primary:first-child,
+.storefront-theme main:has(#contact-name) > div.min-h-screen > section.bg-primary:first-child,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary,
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary,
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.flex.flex-wrap.border-t,
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2.space-y-6 {
+  --ky-texte: var(--ky-encre);
+  --ky-texte-2: var(--ky-encre);
+  --ky-mot: var(--ky-encre);
+  --ky-focus: var(--ky-encre);
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 28 34.9% 16.9%;
+  --primary-foreground: 23 26.5% 9.6%;
+  --accent-foreground: 23 26.5% 9.6%;
+  --primary-ink: 23 26.5% 9.6%;
+  color: var(--ky-encre);
+}
+
+/* Cream on green (`.ky-champ--vert` equivalent; the green turns #2D4634 in dark through --ky-vert-champ). */
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section.bg-primary:first-child,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] {
+  --ky-texte: var(--ky-badigeon);
+  --ky-texte-2: var(--ky-creme-ombre);
+  --ky-mot: var(--ky-orange-clair);
+  --ky-focus: var(--ky-orange-clair);
+  --foreground: 43 89.7% 92.4%;
+  --muted-foreground: 45 27.3% 74.1%;
+  --primary-foreground: 43 89.7% 92.4%;
+  --accent-foreground: 23 100% 68%;
+  --primary-ink: 23 100% 68%;
+  --card-foreground: 43 89.7% 92.4%;
+  color: var(--ky-badigeon);
+}
+
+/* A cream slab that stays cream in both modes when it sits on a paint (`.ky-champ--creme` equivalent). */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card {
+  --ky-texte: var(--ky-charbon);
+  --ky-texte-2: var(--ky-gris);
+  --ky-mot: var(--ky-brique);
+  --ky-focus: #c24a00;
+  --foreground: 0 0% 21.6%;
+  --muted-foreground: 32 8.6% 34.3%;
+  --accent-foreground: 23 100% 23.9%;
+  color: var(--ky-charbon);
+}
+
+/* The engine's tiny capital labels (`text-[10px] font-bold uppercase tracking-widest`) read too small in
+   Mukta: 12 px, 800, a calmer tracking. */
+.storefront-theme main:is(:has(div.rounded-\[3rem\].border-8.border-white), :has(#contact-name), :has(.lucide-book-open), :has(> div.min-h-screen > article), :has(> main), :has(a[href^="/account"]), :has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag), :has(#promo-code), :has(a[href^="/track/"]), :has(> div.min-h-screen > div.max-w-lg.text-center > ol), :has(> div.min-h-screen.bg-muted > div.max-w-xl.text-center)) :is(.text-\[10px\], .text-\[9px\]).uppercase {
+  font-family: var(--ky-font-texte);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* No photo ever grows on hover in the group (engine `hover:scale-105`, `group-hover:scale-110`). */
+.storefront-theme main:is(:has(div.rounded-\[3rem\].border-8.border-white), :has(#contact-name), :has(.lucide-book-open), :has(> div.min-h-screen > article), :has(> main), :has(a[href^="/account"]), :has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag), :has(#promo-code), :has(a[href^="/track/"]), :has(> div.min-h-screen > div.max-w-lg.text-center > ol), :has(> div.min-h-screen.bg-muted > div.max-w-xl.text-center)) img,
+.storefront-theme main:is(:has(div.rounded-\[3rem\].border-8.border-white), :has(#contact-name), :has(.lucide-book-open), :has(> div.min-h-screen > article), :has(> main), :has(a[href^="/account"]), :has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag), :has(#promo-code), :has(a[href^="/track/"]), :has(> div.min-h-screen > div.max-w-lg.text-center > ol), :has(> div.min-h-screen.bg-muted > div.max-w-xl.text-center)) [class*="group-hover:scale"] {
+  scale: none !important;
+  transform: none;
+}
+
+/* The engine's decorative blurs (white and orange discs) belong to its orange bands, not to the wall. */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child > div.absolute.pointer-events-none,
+.storefront-theme main:is(:has(div.rounded-\[3rem\].border-8.border-white), :has(#contact-name), :has(.lucide-book-open), :has(> div.min-h-screen > article), :has(> main), :has(a[href^="/account"]), :has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag), :has(#promo-code), :has(a[href^="/track/"]), :has(> div.min-h-screen > div.max-w-lg.text-center > ol), :has(> div.min-h-screen.bg-muted > div.max-w-xl.text-center)) div.bg-primary > div.absolute.pointer-events-none,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary > div.absolute,
+.storefront-theme > div.min-h-screen.relative.flex > div.absolute.pointer-events-none > div {
+  display: none;
+}
+
+/* ════════════════════════════ 1. Page head A: /about, /contact, /blog ════════════════════════════ */
+
+/* The engine's orange band with its round bottom becomes ONE field of the page's colour laid on the wall:
+   brushed edges, inset from the screen by --ky-marge-passe and from the fixed header, so the brush stays whole.
+   Sage for the story, ochre for contact, green for the blog (ART_DIRECTION §15). Painted at load, 500 ms. */
+.storefront-theme main > div.min-h-screen > section.bg-primary.md\:rounded-b-\[6rem\]:not(.storefront-hero):first-child {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  background: transparent;
+  border-radius: 0;
+  padding-top: calc(var(--ky-entete-h) + clamp(2.75rem, 7vw, 5.5rem));
+  padding-bottom: clamp(3.25rem, 7vw, 6rem);
+  padding-inline: clamp(1.75rem, 6vw, 5rem);
+}
+
+.storefront-theme main > div.min-h-screen > section.bg-primary.md\:rounded-b-\[6rem\]:not(.storefront-hero):first-child::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--ky-entete-h) + 0.75rem);
+  right: var(--ky-marge-passe);
+  bottom: 0;
+  left: var(--ky-marge-passe);
+  z-index: -1;
+  background: var(--ky-tete-fond, var(--ky-sauge));
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section.bg-primary:first-child {
+  --ky-tete-fond: var(--ky-sauge);
+  --ky-tete-trace: var(--ky-vert);
+  --ky-mot-fond: var(--ky-orange);
+  --ky-mot-texte: var(--ky-badigeon);
+}
+
+.storefront-theme main:has(#contact-name) > div.min-h-screen > section.bg-primary:first-child {
+  --ky-tete-fond: var(--ky-ocre);
+  --ky-tete-trace: var(--ky-encre);
+  --ky-mot-fond: var(--ky-vert-champ);
+  --ky-mot-texte: var(--ky-badigeon);
+}
+
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section.bg-primary:first-child {
+  --ky-tete-fond: var(--ky-vert-champ);
+  --ky-tete-trace: var(--ky-ocre);
+  --ky-mot-fond: var(--ky-ocre);
+  --ky-mot-texte: var(--ky-encre);
+}
+
+/* The head's content: left-aligned like an address painted on a wall, not a centred poster. */
+.storefront-theme main > div.min-h-screen > section.bg-primary.md\:rounded-b-\[6rem\]:not(.storefront-hero):first-child > div.max-w-4xl {
+  max-width: 1120px;
+  margin-inline: auto;
+  text-align: left;
+}
+
+/* ════════════════════════════ 2. Page head B: /account/*, /order/* ════════════════════════════ */
+
+/* The same engine band with an 8rem round bottom (the carte has it too: excluded by its search field, it is
+   the carte agent's). On the wall, no field: the title carries a green pass (ART_DIRECTION §15, « Compte »). */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  background: transparent;
+  border-radius: 0;
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+  padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  --primary-foreground: var(--ky-hsl-texte, 0 0% 21.6%);
+  color: var(--ky-texte);
+}
+
+.dark .storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child {
+  --ky-hsl-texte: 43 89.7% 92.4%;
+}
+
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child {
+  --ky-mot-fond: var(--ky-vert-champ);
+  --ky-mot-texte: var(--ky-badigeon);
+}
+
+/* ════════════════════════════ 3. Shared head pieces (A, B, cart) ════════════════════════════ */
+
+/* The title: Bungee at the scale of `.ky-titre--l` (the engine asks for 96 px). */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child h1 {
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+  margin-bottom: clamp(1rem, 2.4vw, 1.75rem);
+}
+
+/* The CMS word ({…}) of the title: a brush stroke behind it, the page's second colour (orange on sage, green on
+   ochre, ochre on green, green on the wall for the account). Bungee ≥ 28 px: cream letters on orange are allowed
+   (3,22:1, large text). */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child h1 > span {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  margin-top: 0.08em;
+  padding: 0.16em 0.5em 0.1em;
+  color: var(--ky-mot-texte, var(--ky-badigeon));
+  font-style: normal;
+}
+
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child h1 > span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-mot-fond, var(--ky-vert-champ));
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* The engine badge becomes the eyebrow (`.ky-surtitre` equivalent): a short brush dab, Mukta 800 capitals.
+   No pill, no border, no blur. */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child [data-slot="badge"],
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) [data-slot="badge"],
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > [data-slot="badge"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: clamp(1rem, 2vw, 1.5rem);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child [data-slot="badge"]::before,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) [data-slot="badge"]::before,
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > [data-slot="badge"]::before {
+  content: "";
+  flex: none;
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-tete-trace, var(--ky-ocre));
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* The lead: `.ky-lead` scale, the field's text colour. */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child h1 + p {
+  max-width: 44ch;
+  margin-inline: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte);
+}
+
+/* Head B is centred by the engine (avatar, back link): keep the axis, centre the lead. */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child h1 + p {
+  margin-inline: auto;
+  color: var(--ky-texte-2);
+}
+
+/* « Mon compte » back link in head B: Mukta 800 capitals on an ochre trace, not an underline. */
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child a:is([href="/account"], [href="/menu"]) {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child a:is([href="/account"], [href="/menu"])::after {
+  content: "";
+  position: absolute;
+  left: -0.2em;
+  right: -0.2em;
+  bottom: 0.55rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: height var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child a:is([href="/account"], [href="/menu"]):hover::after {
+  height: 0.75em;
+}
+
+/* ════════════════════════════ 4. Brushed buttons on engine markup ════════════════════════════ */
+
+/* LOCAL EQUIVALENT of `.ky-btn` for the engine's own call-to-action buttons of these pages: the fill is a short
+   brush dab (`::before`, `--ky-brosse-courte`), orange with an ink label; on an ink-on-paint field the dab turns
+   ink with a cream label. 48 px at least. The engine's rounded fill, shadow and gradient go. */
+.storefront-theme main:has(#contact-name) form button[type="submit"],
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary a > button,
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary form button[type="submit"],
+.storefront-theme > div.min-h-screen.relative.flex form button[type="submit"],
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/menu"],
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) a[href="/menu"] > button[data-slot="button"] {
+  position: relative;
+  isolation: isolate;
+  min-height: 48px;
+  height: auto;
+  padding: 0.85rem 1.75rem;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ky-btn-texte, var(--ky-encre));
+}
+
+.storefront-theme main:has(#contact-name) form button[type="submit"]::before,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary a > button::before,
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary form button[type="submit"]::before,
+.storefront-theme > div.min-h-screen.relative.flex form button[type="submit"]::before,
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/menu"]::before,
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) a[href="/menu"] > button[data-slot="button"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-btn-fond, var(--ky-orange));
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(#contact-name) form button[type="submit"]:hover::before,
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary a > button:hover::before,
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary form button[type="submit"]:hover::before,
+.storefront-theme > div.min-h-screen.relative.flex form button[type="submit"]:hover::before,
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/menu"]:hover::before,
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) a[href="/menu"] > button[data-slot="button"]:hover::before {
+  background: var(--ky-btn-survol, var(--ky-orange-vif));
+}
+
+/* On an orange field the dab is ink with a cream label. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary,
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary {
+  --ky-btn-fond: var(--ky-encre);
+  --ky-btn-texte: var(--ky-badigeon);
+  --ky-btn-survol: #3a2a1c;
+}
+
+/* An arrow in a brushed button does not slide (no jump). */
+.storefront-theme main:is(:has(div.rounded-\[3rem\].border-8.border-white), :has(#contact-name), :has(.lucide-book-open), :has(> div.min-h-screen > article), :has(> main), :has(a[href^="/account"]), :has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag), :has(#promo-code), :has(a[href^="/track/"]), :has(> div.min-h-screen > div.max-w-lg.text-center > ol), :has(> div.min-h-screen.bg-muted > div.max-w-xl.text-center)) :is(form button[type="submit"], a > button[data-slot="button"]) svg {
+  translate: none;
+}
+
+/* ════════════════════════════ 5. Reading fields: inputs of the group ════════════════════════════ */
+
+/* One field for the whole group: the wall inside the slab, a boundary at 3:1 (--input), 6 px corners, 16 px
+   Mukta (no zoom on a phone), a visible focus ring (shared.css :focus-visible + the border). */
+.storefront-theme main:has(#contact-name) form :is(input, select, textarea),
+.storefront-theme main:has(a[href^="/account"]) :is(input[data-slot="input"], select, textarea),
+.storefront-theme > div.min-h-screen.relative.flex form input[data-slot="input"],
+.storefront-theme main:has(.lucide-book-open) section.mb-24 form input {
+  border: 1px solid hsl(var(--input));
+  border-radius: var(--ky-r-ctrl);
+  background-color: var(--ky-sol);
+  color: var(--ky-texte);
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: none;
+}
+
+.storefront-theme main:has(#contact-name) form :is(input, select, textarea):focus,
+.storefront-theme main:has(a[href^="/account"]) :is(input[data-slot="input"], select, textarea):focus,
+.storefront-theme > div.min-h-screen.relative.flex form input[data-slot="input"]:focus,
+.storefront-theme main:has(.lucide-book-open) section.mb-24 form input:focus {
+  border-color: var(--ky-focus);
+  box-shadow: 0 0 0 1px var(--ky-focus);
+}
+
+/* Placeholders: a clearly lighter hint than typed text (charcoal 600 / cream 600), still AA on the field's
+   wall: light #756B5F 4,72:1 on #FDF3DA (typed text 10,78), dark #9F9A85 5,72:1 on #15241B (typed 14,62).
+   Weight 400 against the typed 600 widens the gap. Checkout and promo fields included (QA #21). */
+.storefront-theme main:has(#contact-name) form :is(input, textarea)::placeholder,
+.storefront-theme main:has(a[href^="/account"]) input[data-slot="input"]::placeholder,
+.storefront-theme > div.min-h-screen.relative.flex form input[data-slot="input"]::placeholder,
+.storefront-theme main:has(#promo-code) :is(input[data-slot="input"], textarea[data-slot="textarea"])::placeholder {
+  color: #756b5f;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.dark .storefront-theme main:has(#contact-name) form :is(input, textarea)::placeholder,
+.dark .storefront-theme main:has(a[href^="/account"]) input[data-slot="input"]::placeholder,
+.dark .storefront-theme > div.min-h-screen.relative.flex form input[data-slot="input"]::placeholder,
+.dark .storefront-theme main:has(#promo-code) :is(input[data-slot="input"], textarea[data-slot="textarea"])::placeholder {
+  color: #9f9a85;
+}
+
+/* Labels: Mukta 800 capitals, 12 px, the secondary text. */
+.storefront-theme main:has(#contact-name) form label,
+.storefront-theme main:has(a[href^="/account"]) label[data-slot="label"],
+.storefront-theme > div.min-h-screen.relative.flex form label[data-slot="label"] {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+/* ════════════════════════════ 6. /about : Notre histoire ════════════════════════════ */
+
+/* 6.1 The story: the photo laid on a green brush stroke (the hero's gesture, from the right), the text in a
+   cream slab. The photo is capped (`.ky-cap` scene height), no white frame, no dark veil, no zoom. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:nth-child(2) {
+  padding-block: clamp(3.5rem, 8vw, 7rem);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:nth-child(2) > div {
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div:has(> div.rounded-\[3rem\].border-8) {
+  position: relative;
+  isolation: isolate;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
+  view-timeline: --ky-passe block;
+}
+
+/* A wide green stroke across the photo's middle, wider than the photo: the photo is laid on it. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div:has(> div.rounded-\[3rem\].border-8)::before {
+  content: "";
+  position: absolute;
+  inset: 22% 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.rounded-\[3rem\].border-8.border-white {
+  height: var(--ky-cap-scene);
+  max-height: var(--ky-cap-scene);
+  border: 0;
+  border-radius: var(--ky-r-photo);
+  box-shadow: var(--ky-ombre-courte);
+  overflow: clip;
+  background: var(--ky-sol-charge);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.rounded-\[3rem\].border-8.border-white > img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.rounded-\[3rem\].border-8.border-white > div.absolute {
+  display: none;
+}
+
+/* The story text: a cream slab, the title in Bungee, the CMS word in the brand word colour. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:nth-child(2) div.flex-1:not(.w-full) {
+  padding: clamp(1.75rem, 4vw, 3.25rem);
+  background: var(--ky-dalle);
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) h2 {
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) h2 > span {
+  font-style: normal;
+  color: var(--ky-mot);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:nth-child(2) div.text-lg {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:nth-child(2) div.text-lg > p + p {
+  margin-top: 1em;
+}
+
+/* 6.2 « Trois envies »: an ochre field, three cream slabs on it. The icon tile becomes a brush dab (green, sage,
+   charcoal), no rounded tile, no lift on hover: the slab takes the next coat (peach). */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 {
+  position: relative;
+  isolation: isolate;
+  margin-inline: var(--ky-marge-passe);
+  padding-block: clamp(3.5rem, 8vw, 6.5rem);
+  padding-inline: clamp(1.25rem, 5vw, 4.5rem);
+  background: transparent;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 > div > div.text-center {
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 h2 > span {
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 [data-slot="badge"] {
+  --ky-tete-trace: var(--ky-encre);
+}
+
+/* Three columns only from 1024 px: at 768 the engine's three cards squeeze their titles. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 div.grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 div.grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card {
+  background: var(--ky-dalle-claire);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  translate: none;
+  text-align: left;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card:hover {
+  background: var(--ky-peche);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card > div:first-child {
+  width: 4.5rem;
+  height: 3rem;
+  margin: 0 0 1.25rem;
+  border-radius: 0;
+  background: var(--ky-envie, var(--ky-vert));
+  color: var(--ky-badigeon);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  scale: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card:nth-child(2) > div:first-child {
+  --ky-envie: var(--ky-sauge);
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card:nth-child(3) > div:first-child {
+  --ky-envie: var(--ky-charbon);
+}
+
+/* When the CMS gives the value a picture, the picture stands on its own (no dab cutting it). */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card > div:first-child:has(> img) {
+  width: 7rem;
+  height: 7rem;
+  background: transparent;
+  mask: none;
+  -webkit-mask: none;
+  overflow: visible;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card > div:first-child > img {
+  padding: 0;
+  border-radius: var(--ky-r-photo);
+  object-fit: contain;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card > div:first-child svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40 .bg-card h3 {
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* 6.3 The figures: a green field, the numbers painted in ochre (`.ky-chiffre--m` scale), two by two so « 10 min »
+   and « 7 j/7 » keep their letters together. The engine's glass icon tiles go: a number needs no icon. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] {
+  isolation: isolate;
+  overflow: visible;
+  padding: clamp(2.75rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4.5rem);
+  background: transparent;
+  border-radius: 0;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] > div.grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+@media (min-width: 640px) {
+  .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] > div.grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] > div.grid > div {
+  text-align: left;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] > div.grid > div > div:first-child {
+  display: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] > div.grid > div > p:first-of-type {
+  margin-bottom: 0.75rem;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(2.75rem, 6vw, 5rem);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-ocre);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\] > div.grid > div > p:last-of-type {
+  max-width: 30ch;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--ky-creme-ombre);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:has(> div > div.bg-primary.rounded-\[3rem\]) {
+  padding-block: clamp(3rem, 7vw, 5rem) 0;
+}
+
+/* 6.4 The call to action: the page's one orange field, whole, inset from the screen. */
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:has(> div.relative.rounded-\[4rem\]) {
+  padding-inline: var(--ky-marge-passe);
+  padding-block: clamp(3rem, 7vw, 5rem) 0;
+  margin-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary {
+  isolation: isolate;
+  overflow: visible;
+  padding: clamp(3rem, 7vw, 6rem) clamp(1.5rem, 5vw, 4.5rem);
+  background: transparent;
+  border-radius: 0;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary h2 {
+  font-style: normal;
+  font-size: clamp(2rem, 4.6vw, 3.75rem);
+}
+
+.storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary h2 > span {
+  color: var(--ky-badigeon);
+}
+
+/* ════════════════════════════ 7. /contact ════════════════════════════ */
+
+/* The form in a cream slab on the wall; the address, the hours and the line « Nous joindre » on a green field
+   beside it (below it on a phone). The engine's −3 rem overlap on the head goes: the field's brush stays whole. */
+.storefront-theme main:has(#contact-name) > div.min-h-screen > section:nth-child(2) {
+  margin-top: 0;
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.storefront-theme main:has(#contact-name) > div.min-h-screen > section:nth-child(2) > div.grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.75rem, 4vw, 3rem);
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main:has(#contact-name) > div.min-h-screen > section:nth-child(2) > div.grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-3 > div.bg-card {
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre);
+}
+
+/* Titles of the slab (« Écris-nous », 24 px): below Bungee's 28 px floor, so Mukta 800 capitals. */
+.storefront-theme main:has(#contact-name) div.lg\:col-span-3 h2 {
+  font-family: var(--ky-font-titre);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-3 > div.bg-card > div:first-child > div:first-child,
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card > div:first-child > div:first-child {
+  width: 3rem;
+  height: 2rem;
+  border-radius: 0;
+  background: var(--ky-icone, var(--ky-ocre));
+  color: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-3 > div.bg-card > div:first-child > div:first-child svg,
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card > div:first-child > div:first-child svg {
+  color: inherit;
+}
+
+.storefront-theme main:has(#contact-name) form :is(input, select) {
+  height: 3.25rem;
+}
+
+.storefront-theme main:has(#contact-name) form button[type="submit"] {
+  width: auto;
+  min-width: min(100%, 16rem);
+  min-height: 56px;
+  padding-inline: 2.5rem;
+}
+
+/* The aside: one sage field (the footer below is green), its three blocks laid on it without slabs. */
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2.space-y-6 {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(2rem, 5vw, 3.25rem) clamp(1.5rem, 4vw, 2.75rem);
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2.space-y-6::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card + div.bg-card {
+  padding-top: 1.5rem;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 h3 {
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 address {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 dl dt {
+  font-size: 0.875rem;
+  color: #2b2a1f;
+}
+
+/* The hours are the one number of the page: Bungee, painted in green on the sage (large text, 5,9:1). */
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 dl dd {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1;
+  color: var(--ky-vert);
+  white-space: nowrap;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 dl > div {
+  flex-wrap: wrap;
+  align-items: baseline;
+  row-gap: 0.25rem;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card > div:first-child > div:first-child {
+  --ky-icone: var(--ky-encre);
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card:nth-child(2) > div:first-child > div:first-child {
+  --ky-icone: var(--ky-vert);
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 div.bg-card:nth-child(3) > div:first-child > div:first-child {
+  --ky-icone: var(--ky-chaux);
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 p {
+  color: #2b2a1f;
+}
+
+.storefront-theme main:has(#contact-name) div.lg\:col-span-2 a {
+  color: var(--ky-encre);
+  text-decoration: underline;
+}
+
+/* ════════════════════════════ 8. /blog ════════════════════════════ */
+
+/* « Tous les articles »: Bungee at the slab title scale (24 px was below the 28 px floor), the icon tile goes. */
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:not(:first-child) > div.flex.items-center.gap-3 > div:first-child {
+  display: none;
+}
+
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:not(:first-child) > div.flex.items-center.gap-3 h2 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1;
+}
+
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:not(:first-child) > div.flex.items-center.gap-3 h2 span {
+  font-family: var(--ky-font-texte);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:nth-child(2) {
+  margin-top: 0;
+  padding-top: clamp(3rem, 7vw, 5rem);
+}
+
+/* No jump while the articles load (CLS 0,57 at 375, 0,19 at 1440 under Fast 4G + CPU x4). The engine first
+   prints three pulsing blocks right under the head, then slips the featured article in above them: the
+   whole section (and the footer before it) was pushed off the screen. While the blocks pulse, the section
+   waits where the featured article will end. Heights measured on the seed's featured article (2026-11-03):
+   852 px at 320, 806 at 375, 703 at 600, 655 at 767; about 800 from 768 to 1023; 707 at 1024; 637 from
+   1280. Anything a little long only moves off-screen content. */
+.storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:has(> div.grid > .animate-pulse) {
+  margin-top: calc(993px - 44.3vw);
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:has(> div.grid > .animate-pulse) {
+    margin-top: 50rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:has(> div.grid > .animate-pulse) {
+    margin-top: 44rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:has(> div.grid > .animate-pulse) {
+    margin-top: 40rem;
+  }
+}
+
+/* No article yet (drafts wait for their covers): a cream field instead of a dashed frame, the book painted in
+   ochre. The engine's sentence stays as written. */
+.storefront-theme main:has(.lucide-book-open) div.border-dashed {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3rem, 8vw, 5rem) clamp(1.5rem, 5vw, 3rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(.lucide-book-open) div.border-dashed::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-chaux);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(.lucide-book-open) div.border-dashed svg {
+  width: 3.5rem;
+  height: 3.5rem;
+  color: var(--ky-brique);
+}
+
+.storefront-theme main:has(.lucide-book-open) div.border-dashed p {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ky-charbon);
+}
+
+/* The article cards (featured and grid): cream slabs, the photo capped inside with soft corners, no border, no
+   lift, no zoom; the next coat (peach) on hover. Without a cover the engine paints its muted box: it becomes a
+   wall patch with a brush stroke, so a card without photo still has colour. */
+.storefront-theme main:has(.lucide-book-open) a.group > div.bg-card {
+  height: 100%;
+  padding: 0.75rem;
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  translate: none;
+  overflow: visible;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group:is(:hover, :focus-visible) > div.bg-card {
+  background: var(--ky-couche-blog, var(--ky-peche));
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.dark .storefront-theme main:has(.lucide-book-open) a.group > div.bg-card {
+  --ky-couche-blog: var(--ky-vert);
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group > div.bg-card div.relative.overflow-hidden.bg-muted {
+  max-height: var(--ky-cap-plat);
+  border-radius: var(--ky-r-photo);
+  overflow: clip;
+  background: var(--ky-sol-charge);
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group > div.bg-card div.relative.overflow-hidden.bg-muted:not(:has(img))::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 42%;
+  height: 18%;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group > div.bg-card div.relative.overflow-hidden.bg-muted > div.absolute.inset-0 {
+  display: none;
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group :is(h2, h3) {
+  text-transform: uppercase;
+}
+
+/* The featured title runs on five rows at 375 (« … À KURRY UP … »): 1.08, not the engine's 0.95, so a
+   capital accent never touches the row above (same value as `.ky-titre`, shared.css §2). */
+.storefront-theme main:has(.lucide-book-open) a.group h2 {
+  line-height: 1.08;
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group h3 {
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group div.border-t {
+  border-top: 0;
+  color: var(--ky-mot);
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group [data-slot="badge"] {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-dalle-claire);
+  color: var(--ky-charbon);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group div.absolute.top-4.right-4 {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-dalle-claire);
+}
+
+.storefront-theme main:has(.lucide-book-open) a.group div.absolute.top-4.right-4 p {
+  color: var(--ky-charbon);
+}
+
+/* The featured article: the cover capped at the scene height on a large screen. */
+.storefront-theme main:has(.lucide-book-open) a.group > div.bg-card > div.flex > div:first-child {
+  max-height: var(--ky-cap-scene);
+}
+
+/* The newsletter: the page's one orange field, whole, inset. Its field turns cream with an ink border. */
+.storefront-theme main:has(.lucide-book-open) section.mb-24 {
+  padding-inline: var(--ky-marge-passe);
+}
+
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary {
+  isolation: isolate;
+  overflow: visible;
+  padding: clamp(3rem, 7vw, 5.5rem) clamp(1.5rem, 5vw, 4.5rem);
+  background: transparent;
+  border-radius: 0;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary h2 {
+  font-size: clamp(2rem, 4.6vw, 3.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.storefront-theme main:has(.lucide-book-open) section.mb-24 form input {
+  height: 3.5rem;
+  border: 2px solid var(--ky-encre);
+  background-color: var(--ky-dalle-claire);
+  color: var(--ky-charbon);
+  --ky-focus: var(--ky-encre);
+}
+
+.storefront-theme main:has(.lucide-book-open) section.mb-24 form input::placeholder {
+  color: var(--ky-gris);
+  opacity: 1;
+}
+
+.storefront-theme main:has(.lucide-book-open) section.mb-24 form button[type="submit"] {
+  min-height: 56px;
+}
+
+/* ════════════════════════════ 9. /blog/[slug] : a reading column ════════════════════════════ */
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl {
+  padding-top: calc(var(--ky-entete-h) + clamp(2rem, 5vw, 3.5rem));
+}
+
+/* « Tous les articles »: Mukta 800 capitals on an ochre trace. */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > a[href="/blog"] {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > a[href="/blog"]::after {
+  content: "";
+  position: absolute;
+  left: -0.2em;
+  right: -0.2em;
+  bottom: 0.55rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: height var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > a[href="/blog"]:hover::after {
+  height: 0.75em;
+}
+
+/* The title on a green pass (the blog's colour), cream letters, painted at load. */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > h1 {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(1rem, 2.4vw, 1.6rem) clamp(1.25rem, 3.5vw, 2.25rem);
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > h1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > h1 + p {
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > p.text-lg {
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+/* The cover: capped, soft corners, no border. */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.relative.aspect-\[16\/9\] {
+  max-height: var(--ky-cap-scene);
+  border: 0;
+  border-radius: var(--ky-r-photo);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+/* The body: a cream slab, Mukta 17 px, Bungee for the article's own h2 (≥ 28 px), Mukta 800 below. */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose {
+  padding: clamp(1.5rem, 4.5vw, 3.25rem);
+  background: var(--ky-dalle);
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  font-family: var(--ky-font-texte);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ky-texte);
+  --tw-prose-body: var(--ky-texte);
+  --tw-prose-headings: var(--ky-texte);
+  --tw-prose-bold: var(--ky-texte);
+  --tw-prose-links: var(--ky-mot);
+  --tw-prose-bullets: var(--ky-ocre);
+  --tw-prose-counters: var(--ky-mot);
+  --tw-prose-quotes: var(--ky-texte);
+  --tw-prose-quote-borders: var(--ky-sauge);
+  --tw-prose-hr: var(--ky-filet-deco);
+  --tw-prose-invert-body: var(--ky-texte);
+  --tw-prose-invert-headings: var(--ky-texte);
+  --tw-prose-invert-bold: var(--ky-texte);
+  --tw-prose-invert-links: var(--ky-mot);
+  --tw-prose-invert-bullets: var(--ky-ocre);
+  --tw-prose-invert-quotes: var(--ky-texte);
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose h2 {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose h3 {
+  font-size: 1.25rem;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose a {
+  color: var(--ky-mot);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose img {
+  max-height: var(--ky-cap-scene);
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--ky-r-photo);
+}
+
+/* A quote: a sage pass, not a rule on the left. */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose blockquote {
+  position: relative;
+  isolation: isolate;
+  padding: 1.25rem 1.75rem;
+  border: 0;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose blockquote::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.prose blockquote p {
+  color: var(--ky-encre);
+}
+
+/* The tags: an ochre pass with cream chips, not a rule above. */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.flex.flex-wrap.border-t {
+  position: relative;
+  isolation: isolate;
+  padding: 1.5rem 1.75rem;
+  border-top: 0;
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.flex.flex-wrap.border-t::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div.min-h-screen > article.max-w-3xl > div.flex.flex-wrap.border-t [data-slot="badge"] {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-dalle-claire);
+  color: var(--ky-charbon);
+}
+
+/* The end of an article: a sage brush stroke, the wall's signature (decorative). */
+.storefront-theme main > div.min-h-screen > article.max-w-3xl::after {
+  content: "";
+  display: block;
+  height: clamp(1.5rem, 3vw, 2.25rem);
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+}
+
+/* ════════════════════════════ 10. Legal: /mentions-legales, /cgv, /confidentialite ════════════════════════════ */
+
+/* The title on a charcoal pass (cream letters) over a sage patch, the long text in a cream slab, Mukta 17 px.
+   On a computer the title stays in a sticky column on the left while the text scrolls (the engine prints no
+   table of contents: there is nothing else to pin, see the report). */
+.storefront-theme main > main.max-w-3xl {
+  max-width: min(1240px, 100% - 2rem);
+  padding-top: calc(var(--ky-entete-h) + clamp(2rem, 5vw, 3.5rem));
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+  padding-inline: clamp(0.75rem, 3vw, 1.5rem);
+}
+
+.storefront-theme main > main.max-w-3xl > h1 {
+  position: relative;
+  isolation: isolate;
+  justify-self: start;
+  margin-block: 1.25rem 0.5rem;
+  padding: clamp(0.9rem, 2.2vw, 1.4rem) clamp(1.1rem, 3vw, 2rem);
+  /* QA #14: « CONFIDENTIALITÉ » is ~10 em of Bungee and spilled 11 px at 360 (and ran 240 px over the text
+     column at 1440). 7vw caps phones only (below 457 px); the title never leaves its box (max-width), and a
+     word still too long is hyphenated (the page is lang="fr"), the desktop size is set in the grid below. */
+  font-size: min(clamp(2rem, 4.4vw, 3.75rem), 7vw);
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+  max-width: 100%;
+  hyphens: auto;
+  overflow-wrap: break-word;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > main.max-w-3xl > h1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-charbon);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > main.max-w-3xl > h1::after {
+  content: "";
+  position: absolute;
+  inset: -1.25rem -0.5rem -1.5rem;
+  z-index: -2;
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > main.max-w-3xl > h1 + div {
+  max-width: 62ch;
+  margin-top: 2.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main > main.max-w-3xl > div.space-y-10 {
+  padding: clamp(1.5rem, 4.5vw, 3.25rem);
+  background: var(--ky-dalle);
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main > main.max-w-3xl > div.space-y-10 > section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > main.max-w-3xl > div.space-y-10 > section h2::before {
+  content: "";
+  flex: none;
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > main.max-w-3xl > div.space-y-10 > section > div {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > main.max-w-3xl > div.space-y-10 > section > div .prose {
+  font-size: 1.0625rem;
+  --tw-prose-body: var(--ky-texte);
+  --tw-prose-bold: var(--ky-texte);
+  --tw-prose-links: var(--ky-mot);
+  --tw-prose-bullets: var(--ky-ocre);
+  --tw-prose-invert-body: var(--ky-texte);
+  --tw-prose-invert-bold: var(--ky-texte);
+  --tw-prose-invert-links: var(--ky-mot);
+}
+
+.storefront-theme main > main.max-w-3xl > div.space-y-10 > section > div .font-semibold {
+  font-weight: 700;
+}
+
+/* « non communiqué par l'établissement »: Mukta has no italic; the secondary text, upright. */
+.storefront-theme main > main.max-w-3xl .italic {
+  font-style: normal;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main > main.max-w-3xl a {
+  color: var(--ky-mot);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.storefront-theme main > main.max-w-3xl ul {
+  padding-left: 1.25rem;
+}
+
+.storefront-theme main > main.max-w-3xl li::marker {
+  color: var(--ky-brique);
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > main.max-w-3xl {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(3rem, 5vw, 5rem);
+    align-items: start;
+  }
+
+  .storefront-theme main > main.max-w-3xl > h1 {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    position: sticky;
+    top: calc(var(--ky-entete-h) + 3rem);
+    margin-top: 2rem;
+    /* The left track (5/13 of the page less the gap) minus the title's padding holds a 10-letter word. */
+    font-size: min(3.75rem, calc(((min(1240px, 100vw - 2rem) - 2 * clamp(0.75rem, 3vw, 1.5rem) - clamp(3rem, 5vw, 5rem)) * 5 / 13 - 2 * clamp(1.1rem, 3vw, 2rem)) / 6.9));
+  }
+
+  .storefront-theme main > main.max-w-3xl > h1 + div {
+    grid-column: 2;
+    grid-row: 1;
+    margin-top: 0;
+    margin-bottom: 2rem;
+  }
+
+  .storefront-theme main > main.max-w-3xl > div.space-y-10 {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+  }
+}
+
+/* ════════════════════════════ 11. Sign in, sign up, forgotten password ════════════════════════════ */
+
+/* No header, no main: the (auth) screens render `.storefront-theme > div.min-h-screen`. The title on the wall
+   with its word on a green pass; the form in a cream slab, centred, laid on a sage field that is wider than it
+   (whole brush, inset from the screen). The decorative blurs go. */
+.storefront-theme > div.min-h-screen.relative.flex {
+  padding-block: clamp(4.5rem, 10vw, 6rem) clamp(3rem, 8vw, 5rem);
+}
+
+.storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10 {
+  isolation: isolate;
+}
+
+.storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10::before {
+  content: "";
+  position: absolute;
+  top: clamp(3.5rem, 8vw, 5.5rem);
+  right: calc(var(--ky-marge-passe) - 1.5rem);
+  bottom: clamp(-2.5rem, -4vw, -1.5rem);
+  left: calc(var(--ky-marge-passe) - 1.5rem);
+  z-index: -1;
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10::before {
+    right: -3.5rem;
+    left: -3.5rem;
+  }
+}
+
+.storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10 > div.text-center {
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.storefront-theme > div.min-h-screen.relative.flex h1 {
+  font-style: normal;
+  font-size: clamp(2.25rem, 5.4vw, 4rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.storefront-theme > div.min-h-screen.relative.flex h1 > span {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  margin-top: 0.1em;
+  padding: 0.16em 0.5em 0.1em;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme > div.min-h-screen.relative.flex h1 > span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme > div.min-h-screen.relative.flex div.bg-card {
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre);
+  overflow: visible;
+}
+
+.storefront-theme > div.min-h-screen.relative.flex form button[type="submit"] {
+  display: flex;
+  width: auto;
+  min-width: min(100%, 17rem);
+  min-height: 56px;
+  margin-inline: auto;
+  padding-inline: 2.5rem;
+}
+
+/* « Retour », « Mot de passe oublié ? », « Créer un compte »: Mukta 800, the brand word colour. */
+.storefront-theme > div.min-h-screen.relative.flex > a.absolute {
+  min-height: 44px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--ky-mot);
+}
+
+.storefront-theme > div.min-h-screen.relative.flex a:is([href="/forgot-password"], [href^="/sign-up"], [href^="/sign-in"]) {
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--ky-mot);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* QA #15: the form fades in (framer-motion, inline opacity) and was judged at 4,07:1 / 3,94:1 mid-fade. The
+   labels take the text colour (light 11,34:1 on the slab) and, in light, « Mot de passe oublié ? » the deep
+   brick (#7A2E00, 9,0:1): both stay above 4,5:1 from about 60 % of the fade on. Dark keeps its 8,53 / 6,95. */
+.storefront-theme > div.min-h-screen.relative.flex form label[data-slot="label"] {
+  color: var(--ky-texte);
+}
+
+.storefront-theme > div.min-h-screen.relative.flex div.bg-card a[href="/forgot-password"] {
+  color: var(--ky-brique-sombre);
+}
+
+.dark .storefront-theme > div.min-h-screen.relative.flex div.bg-card a[href="/forgot-password"] {
+  color: var(--ky-mot);
+}
+
+/* The line under the slab sits on the sage field: ink. */
+.storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10 > p {
+  color: var(--ky-encre);
+  font-weight: 600;
+}
+
+.storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10 > p a {
+  color: var(--ky-encre);
+  text-decoration: underline;
+}
+
+/* ════════════════════════════ 12. /account/* ════════════════════════════ */
+
+/* The avatar of head B: a peach disc, Bungee initial, no ring (no frame around a round element). */
+.storefront-theme main:has(a[href^="/account"]) > div.min-h-screen > :is(section, div).bg-primary:first-child [data-slot="avatar"] {
+  border: 0;
+  box-shadow: none;
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="avatar-fallback"] {
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+}
+
+/* The three doors of the account (orders, addresses, favourites): three paints, brushed, not three white cards. */
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a > div {
+  position: relative;
+  isolation: isolate;
+  min-height: 5.5rem;
+  padding: 1.25rem 1.5rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-encre);
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 28 34.9% 16.9%;
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a > div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-porte, var(--ky-ocre));
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a:nth-child(2) > div {
+  --ky-porte: var(--ky-sauge);
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a:nth-child(3) > div {
+  --ky-porte: var(--ky-chaux);
+  --foreground: 0 0% 21.6%;
+  --muted-foreground: 32 8.6% 34.3%;
+  color: var(--ky-charbon);
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a:is(:hover, :focus-visible) > div::before {
+  background: var(--ky-porte-survol, var(--ky-orange-vif));
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a > div > div:first-child {
+  padding: 0.6rem 0.8rem;
+  border-radius: 0;
+  background: var(--ky-encre);
+  color: var(--ky-badigeon);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  scale: none;
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a > div p:first-child {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) div.grid.md\:grid-cols-3 > a > div > svg {
+  color: currentColor;
+}
+
+/* The settings slab and every engine card of the account pages: cream, no border, soft shadow. */
+.storefront-theme main:has(a[href^="/account"]) > div.min-h-screen > div.max-w-7xl :is(div.rounded-3xl.bg-card, div.rounded-2xl.bg-card) {
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main:has(a[href^="/account"]) div.bg-muted.rounded-3xl {
+  background: var(--ky-sol-charge);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="avatar"].border-4 {
+  border: 0;
+}
+
+/* The profile photo button (round, on the avatar): orange with an ink icon, no ring, 32 px target at least. */
+.storefront-theme main:has(a[href^="/account"]) button[aria-label^="Changer"] {
+  min-width: 32px;
+  min-height: 32px;
+  box-shadow: none;
+}
+
+/* Tabs: Mukta 800 capitals; the active tab gets the orange mini-pass under its word (no pill). */
+.storefront-theme main:has(a[href^="/account"]) [data-slot="tabs-list"] {
+  background: transparent;
+  border: 0;
+  gap: 0.5rem;
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="tabs-trigger"] {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="tabs-trigger"]::after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.35rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--ky-t-couche) var(--ky-ease);
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="tabs-trigger"][data-state="active"] {
+  background: transparent;
+  box-shadow: none;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="tabs-trigger"]:is([data-state="active"], :hover)::after {
+  transform: scaleX(1);
+}
+
+/* The dashed « Ajouter » buttons: no dashed frame, a wall patch with the brand word colour. */
+.storefront-theme main:has(a[href^="/account"]) button.border-dashed {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-sol-charge);
+  color: var(--ky-mot);
+  font-weight: 800;
+}
+
+/* Empty states (no order, no address, no favourite): a cream field, the icon on an ochre dab, no dashed frame. */
+.storefront-theme main:has(a[href^="/account"]) [data-slot="empty"] {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1.5rem, 5vw, 3rem);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="empty"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-chaux);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(a[href^="/account"]) div.rounded-3xl.bg-card:has(> div > [data-slot="empty"]) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="empty"] [data-slot="empty-icon"] {
+  width: 4rem;
+  height: 2.75rem;
+  border-radius: 0;
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="empty"] [data-slot="empty-title"] {
+  font-family: var(--ky-font-titre);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ky-charbon);
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="empty"] [data-slot="empty-description"] {
+  font-size: 1rem;
+  color: var(--ky-gris);
+}
+
+.storefront-theme main:has(a[href^="/account"]) [data-slot="empty"] a {
+  color: var(--ky-brique);
+  font-weight: 800;
+}
+
+/* « Se déconnecter »: the secondary action, a word on an ochre trace (`.ky-lien` equivalent), no outlined box. */
+.storefront-theme main:has(a[href="/account/orders"]) > div.min-h-screen > div.max-w-7xl > div.mt-8 > button {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) > div.min-h-screen > div.max-w-7xl > div.mt-8 > button::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.55rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: height var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) > div.min-h-screen > div.max-w-7xl > div.mt-8 > button:hover {
+  background: transparent;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(a[href="/account/orders"]) > div.min-h-screen > div.max-w-7xl > div.mt-8 > button:hover::after {
+  height: 0.75em;
+}
+
+/* ════════════════════════════ 12b. Order: /cart, /checkout, /order/*, /track/* ════════════════════════════ */
+
+/* Sober (ART_DIRECTION §15): the title on the wall with an ochre mini-pass under its word, the summaries in cream
+   slabs, the total as a painted number (orange, large text), « Commander » orange with an ink label. Nothing
+   here moves except the title's stroke at load: no field ever waits for an animation. */
+
+/* 12b.1 Cart head: the engine's orange band becomes the wall. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child {
+  background: transparent;
+  border-radius: 0;
+  padding-top: calc(var(--ky-entete-h) + clamp(2rem, 5vw, 3.5rem));
+  padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  --primary-foreground: var(--ky-hsl-texte, 0 0% 21.6%);
+  color: var(--ky-texte);
+}
+
+.dark .storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child,
+.dark .storefront-theme main:has(a[href^="/track/"]) > div.min-h-screen > section.bg-primary:first-child {
+  --ky-hsl-texte: 43 89.7% 92.4%;
+}
+
+/* The bag tile, the confirmation disc: an ochre dab / disc, ink icon, no glass, no ring. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child div.rounded-2xl,
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child div.rounded-\[1\.5rem\] {
+  width: 4.5rem;
+  border-radius: 0;
+  background: var(--ky-ocre);
+  backdrop-filter: none;
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child svg,
+.storefront-theme main:has(a[href^="/track/"]) > div.min-h-screen > section.bg-primary:first-child div.rounded-full svg {
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(a[href^="/track/"]) > div.min-h-screen > section.bg-primary:first-child div.rounded-full {
+  background: var(--ky-ocre);
+  backdrop-filter: none;
+}
+
+.storefront-theme main:has(a[href^="/track/"]) > div.min-h-screen > section.bg-primary:first-child span.font-mono {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-texte);
+}
+
+/* 12b.2 The titles of the order pages: Bungee, the mini-pass (0,32 em, ochre) under the word. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child h1,
+.storefront-theme main:has(#promo-code) header h1,
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) h1,
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center > h1 {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  font-style: normal;
+  font-size: clamp(2.25rem, 5.4vw, 4.25rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(#promo-code) header h1 > span,
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) h1 > span,
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center > h1 > span {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child h1::after,
+.storefront-theme main:has(#promo-code) header h1 > span::after,
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) h1 > span::after,
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center > h1 > span::after {
+  content: "";
+  position: absolute;
+  left: -0.1em;
+  right: -0.1em;
+  bottom: -0.12em;
+  height: 0.32em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child p {
+  color: var(--ky-texte-2);
+}
+
+/* 12b.3 The cart body: no overlap on the head, cream slabs without border. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.container {
+  margin-top: 0;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.rounded-\[2rem\].bg-card,
+.storefront-theme main:has(#promo-code) div.bg-card:is(.rounded-\[2\.5rem\], .rounded-\[2rem\]),
+.storefront-theme main:has(a[href^="/track/"]) div.rounded-\[2rem\].bg-card {
+  background: var(--ky-dalle);
+  border: 0;
+  border-radius: var(--ky-r-dalle);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.rounded-\[2rem\].bg-card:hover {
+  box-shadow: var(--ky-ombre-courte);
+}
+
+/* Back tile, item photo, quantity: no border; wall patches. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) a.h-10.w-10.rounded-xl {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-sol-charge);
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.relative.h-24.w-24,
+.storefront-theme main:has(#promo-code) div.relative.h-16.w-16 {
+  border: 0;
+  border-radius: var(--ky-r-photo);
+  background: var(--ky-sol-charge);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.rounded-lg.border.bg-muted {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-sol-charge);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.rounded-lg.border.bg-muted button {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) h3,
+.storefront-theme main:has(#promo-code) h3 {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+/* Prices in the lines: `.ky-prix`. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.flex-1 > div > p.text-sm.font-black,
+.storefront-theme main:has(#promo-code) div.min-w-0.flex-1 > p.text-xs.font-bold {
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-texte);
+}
+
+/* The summary's and the sections' titles: the engine asks 20 to 24 px, Bungee needs 28 px. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky h2,
+.storefront-theme main:has(#promo-code) div.bg-card h2,
+.storefront-theme main:has(a[href^="/track/"]) div.rounded-\[2rem\].bg-card h2 {
+  font-style: normal;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.h-12.w-12.rounded-2xl,
+.storefront-theme main:has(#promo-code) div.bg-card div.h-10.w-10.rounded-xl {
+  width: 3rem;
+  height: 2.25rem;
+  border-radius: 0;
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.h-12.w-12.rounded-2xl svg,
+.storefront-theme main:has(#promo-code) div.bg-card div.h-10.w-10.rounded-xl svg {
+  color: inherit;
+}
+
+.storefront-theme main:has(#promo-code) div.bg-card div.h-10.w-10.rounded-xl.bg-destructive\/5 {
+  background: var(--ky-chaux);
+  color: hsl(var(--destructive));
+}
+
+/* Pickup / on site: wall patches; the chosen one is painted ochre (ink label). No frame. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.grid > button,
+.storefront-theme main:has(#promo-code) form > div.grid.grid-cols-2 > button {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-sol-charge);
+  box-shadow: none;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.grid > button.border-primary,
+.storefront-theme main:has(#promo-code) form > div.grid.grid-cols-2 > button.bg-primary {
+  background: transparent;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.grid > button.border-primary::before,
+.storefront-theme main:has(#promo-code) form > div.grid.grid-cols-2 > button.bg-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.grid > button span,
+.storefront-theme main:has(#promo-code) form > div.grid.grid-cols-2 > button span {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The total: the painted number, medium, orange (large text: 3,4:1 on the cream slab, 4,5:1 on the dark one). */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.flex.items-center.justify-between > span.text-2xl,
+.storefront-theme main:has(#promo-code) div.text-right > p.text-3xl,
+.storefront-theme main:has(a[href^="/track/"]) div.rounded-\[2rem\].bg-card > div.flex.justify-between.items-center > span.text-2xl {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-orange);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.flex.items-center.justify-between > span.text-xl,
+.storefront-theme main:has(#promo-code) div.flex.items-center.justify-between.pt-2 > span.text-xl,
+.storefront-theme main:has(a[href^="/track/"]) div.rounded-\[2rem\].bg-card > div.flex.justify-between.items-center > span.text-lg {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--ky-texte);
+}
+
+/* « Commander » / « Confirmer la commande » / « Retour au menu »: the brushed orange dab, ink label. */
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.rounded-\[2rem\] > button[data-slot="button"],
+.storefront-theme main:has(#promo-code) form button[type="submit"][data-slot="button"],
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center a[href="/menu"] > button {
+  position: relative;
+  isolation: isolate;
+  min-height: 56px;
+  /* QA N4: the engine's `whitespace-nowrap` + `h-16` let « Connectez-vous pour continuer » (302 px) run out
+     of its 263 px dab at 375 (« CO » ink on the dark slab). The label wraps inside the dab instead. */
+  height: auto;
+  padding: 0.85rem clamp(1rem, 4vw, 1.5rem);
+  white-space: normal;
+  text-wrap: balance;
+  text-align: center;
+  line-height: 1.25;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: clamp(0.875rem, 0.78rem + 0.45vw, 0.9375rem);
+  letter-spacing: clamp(0.03em, 0.6vw, 0.06em);
+  text-transform: uppercase;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.rounded-\[2rem\] > button[data-slot="button"]::before,
+.storefront-theme main:has(#promo-code) form button[type="submit"][data-slot="button"]::before,
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center a[href="/menu"] > button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.rounded-\[2rem\] > button[data-slot="button"]:hover::before,
+.storefront-theme main:has(#promo-code) form button[type="submit"][data-slot="button"]:hover::before,
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center a[href="/menu"] > button:hover::before {
+  background: var(--ky-orange-vif);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) div.lg\:sticky div.rounded-\[2rem\] > button[data-slot="button"]:disabled::before,
+.storefront-theme main:has(#promo-code) form button[type="submit"][data-slot="button"]:disabled::before {
+  background: var(--ky-chaux);
+}
+
+/* 12b.4 Checkout: the wall (shared.css repaints the engine's muted wrapper), the head clear of the bar. */
+.storefront-theme main:has(#promo-code) > div.min-h-screen {
+  padding-top: calc(var(--ky-entete-h) + clamp(2rem, 5vw, 3.5rem));
+}
+
+.storefront-theme main:has(#promo-code) header a[href="/cart"] {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(#promo-code) div.sticky.top-32 {
+  top: calc(var(--ky-entete-h) + 1.5rem);
+}
+
+.storefront-theme main:has(#promo-code) :is(input[data-slot="input"], textarea[data-slot="textarea"]) {
+  border: 1px solid hsl(var(--input));
+  border-radius: var(--ky-r-ctrl);
+  background-color: var(--ky-sol);
+  color: var(--ky-texte);
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: none;
+}
+
+.storefront-theme main:has(#promo-code) :is(input[data-slot="input"], textarea[data-slot="textarea"]):focus {
+  border-color: var(--ky-focus);
+  box-shadow: 0 0 0 1px var(--ky-focus);
+}
+
+.storefront-theme main:has(#promo-code) label[data-slot="label"],
+.storefront-theme main:has(#promo-code) label.text-\[10px\] {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ky-texte-2);
+}
+
+/* Payment: the chosen way is a peach patch with its check, no orange frame. */
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button {
+  border: 0;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-sol-charge);
+}
+
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button.border-primary {
+  background: var(--ky-peche);
+  color: var(--ky-charbon);
+  --foreground: 0 0% 21.6%;
+  --muted-foreground: 32 8.6% 34.3%;
+}
+
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button div.rounded-lg {
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button > svg:last-child {
+  color: var(--ky-brique);
+}
+
+.storefront-theme main:has(#promo-code) .italic {
+  font-style: normal;
+}
+
+.storefront-theme main:has(#promo-code) a[href="/cgv"],
+.storefront-theme main:has(#promo-code) a[href="/confidentialite"] {
+  color: var(--ky-mot);
+}
+
+/* Promo code: a charcoal dab with a cream label (the orange stays for « Confirmer »). */
+.storefront-theme main:has(#promo-code) #promo-code + button {
+  position: relative;
+  isolation: isolate;
+  background: none;
+  border-radius: 0;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main:has(#promo-code) #promo-code + button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-charbon);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* QA #12: on a phone the promo row stacks (field full width, then « Appliquer »), the hint is no longer cut. */
+@media (max-width: 479px) {
+  .storefront-theme main:has(#promo-code) div.flex:has(> #promo-code) {
+    flex-direction: column;
+  }
+
+  .storefront-theme main:has(#promo-code) #promo-code {
+    flex: none;
+    width: 100%;
+  }
+}
+
+/* QA #1: the guest's « Se connecter » beside the title is `w-full shrink-0` in a row from 640 px on, so it took
+   the whole row width and ran off the right edge. In the row it keeps its own width. */
+@media (min-width: 640px) {
+  .storefront-theme main:has(#promo-code) header > div.flex > h1 {
+    min-width: 0;
+  }
+
+  .storefront-theme main:has(#promo-code) header > div.flex > button {
+    width: auto;
+    max-width: 100%;
+    padding-inline: 1.75rem;
+  }
+}
+
+/* QA #2: the cash notice keeps the engine's literal amber (a warning, both modes), so its « Se connecter »
+   keeps the light peach set in dark too (#7A2E00 on #FBE3C4, 7,56:1) instead of the dark translucent sage. */
+.storefront-theme main:has(#promo-code) [role="alert"] button {
+  border-color: rgb(169 64 0 / 0.3);
+  background-color: var(--ky-peche);
+  color: var(--ky-brique-sombre);
+}
+
+/* QA #3: the guest's disabled « Espèces » tile was faded to 2,52:1 by the engine's opacity-60. It is the only
+   line that says why cash is blocked: full opacity, the secondary text (5,67:1 light, 7,79:1 dark), and the
+   disabled look carried by a dashed edge, no fill on the icon. */
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button:disabled {
+  opacity: 1;
+  border: 1.5px dashed hsl(var(--input));
+}
+
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button:disabled div.rounded-lg {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:has(#promo-code) div.grid.grid-cols-1.gap-3 > button:disabled :is(p, svg) {
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:has(#promo-code) div.relative.h-16.w-16 > div.absolute {
+  border-radius: var(--ky-r-ctrl);
+}
+
+.storefront-theme main:has(#promo-code) div.rounded-\[2rem\].border-success\/20 {
+  border: 0;
+}
+
+/* 12b.5 The checkout's confirmation (shown in place of the form). */
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center > div.rounded-full {
+  box-shadow: none;
+}
+
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center > div.mb-6 > span {
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-sol-charge);
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center a[href="/"] > button {
+  position: relative;
+  isolation: isolate;
+  min-height: 48px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center a[href="/"] > button::after {
+  content: "";
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 0.7rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+}
+
+/* 12b.6 /order/[id]: « Suivre ma commande » is the page's green field (cream text), the details in slabs. */
+.storefront-theme main:has(a[href^="/track/"]) a[href^="/track/"] {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(1.5rem, 3.5vw, 2.25rem) clamp(1.5rem, 4vw, 2.75rem);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ky-badigeon);
+  --primary-foreground: 43 89.7% 92.4%;
+  --ky-focus: var(--ky-orange-clair);
+  view-timeline: --ky-passe block;
+}
+
+.storefront-theme main:has(a[href^="/track/"]) a[href^="/track/"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main:has(a[href^="/track/"]) a[href^="/track/"]:hover {
+  background: transparent;
+}
+
+.storefront-theme main:has(a[href^="/track/"]) a[href^="/track/"]:hover::before {
+  background: var(--ky-vert-profond);
+}
+
+.storefront-theme main:has(a[href^="/track/"]) a[href^="/track/"] p.text-lg {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.storefront-theme main:has(a[href^="/track/"]) a[href^="/track/"] > div:last-child {
+  border-radius: 0;
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(a[href^="/track/"]) div.rounded-\[2rem\].bg-card span.font-bold.text-foreground {
+  color: var(--ky-texte);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) h1 {
+  font-size: clamp(2rem, 3.4vw, 2.5rem);
+  line-height: 1.05;
+}
+
+/* 12b.7 /track/[token]: the steps as coats of paint. The current one is ochre, the ones to come a lime-wash
+   patch, the ones done sage. Round icon discs keep no ring. */
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) > div.min-h-screen {
+  padding-top: calc(var(--ky-entete-h) + clamp(2rem, 5vw, 3.5rem));
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) > div.min-h-screen > div > p:first-child {
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li {
+  position: relative;
+  isolation: isolate;
+  min-height: 4.75rem;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-etape, var(--ky-sauge));
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li.bg-white\/60 {
+  --ky-etape: var(--ky-sol-charge);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li.bg-accent {
+  --ky-etape: var(--ky-ocre);
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 28 34.9% 16.9%;
+  --accent-foreground: 23 26.5% 9.6%;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li:not(.bg-white\/60, .bg-accent) {
+  --foreground: 23 26.5% 9.6%;
+  --muted-foreground: 55 16.2% 14.5%;
+  --accent-foreground: 23 26.5% 9.6%;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li.bg-accent > span.rounded-full {
+  background: var(--ky-encre);
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li span.block {
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+/* At load the current step's coat is painted (500 ms); nothing else of the order pages moves. */
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) ol > li.bg-accent::before,
+  .storefront-theme main:has(> div.min-h-screen > div.bg-primary:first-child .lucide-shopping-bag) > div.min-h-screen > div.bg-primary:first-child h1::after,
+  .storefront-theme main:has(#promo-code) header h1 > span::after,
+  .storefront-theme main:has(> div.min-h-screen > div.max-w-lg.text-center > ol) h1 > span::after,
+  .storefront-theme main > div.min-h-screen.bg-muted > div.max-w-xl.text-center > h1 > span::after {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 200ms both;
+  }
+}
+
+/* ════════════════════════════ 13. The storefront 404 ════════════════════════════ */
+
+/* The painted « 404 », very large in orange (the painted number: large text, 3,22:1 on the wall), then the
+   engine's sentence on a green pass, « Voir la carte » as the brushed button, the way home as a trace link. */
+.storefront-theme main [data-testid="storefront-not-found"] {
+  min-height: 70svh;
+  padding-top: calc(var(--ky-entete-h) + clamp(2rem, 6vw, 4rem));
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+  gap: 1.25rem;
+}
+
+.storefront-theme main [data-testid="storefront-not-found"]::before {
+  content: "404";
+  content: "404" / "";
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(6rem, 24vw, 15rem);
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  color: var(--ky-orange);
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] > h1 {
+  position: relative;
+  isolation: isolate;
+  max-width: min(100%, 22ch);
+  padding: 0.5em 0.9em 0.42em;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] > h1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] > p {
+  max-width: 40ch;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] > div {
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/menu"] {
+  display: inline-flex;
+  align-items: center;
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/"] {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/"]::after {
+  content: "";
+  position: absolute;
+  left: -0.2em;
+  right: -0.2em;
+  bottom: 0.45rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: height var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main [data-testid="storefront-not-found"] a[href="/"]:hover::after {
+  height: 0.75em;
+}
+
+/* ════════════════════════════ 20. Motion of the group ════════════════════════════ */
+
+/* 20.1 At load (heads in the first screen): the field is painted first, then the word's stroke (300 ms later).
+   500 ms, the site's curve. Text is never hidden: only the paint is laid. */
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-theme main > div.min-h-screen > section.bg-primary.md\:rounded-b-\[6rem\]:not(.storefront-hero):first-child::before,
+  .storefront-theme main > main.max-w-3xl > h1::after,
+  .storefront-theme > div.min-h-screen.relative.flex > div.relative.z-10::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) both;
+  }
+
+  .storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary:not(.storefront-hero):first-child h1 > span::before,
+  .storefront-theme > div.min-h-screen.relative.flex h1 > span::before,
+  .storefront-theme main > div.min-h-screen > article.max-w-3xl > h1::before,
+  .storefront-theme main > main.max-w-3xl > h1::before,
+  .storefront-theme main [data-testid="storefront-not-found"] > h1::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 300ms both;
+  }
+
+  /* The account's word stroke comes from the right, like the hero's green pass. */
+  .storefront-theme main:not(:has(input[aria-label="Rechercher un plat"])) > div.min-h-screen > :is(section, div).bg-primary.md\:rounded-b-\[8rem\]:first-child h1 > span::before {
+    animation-name: ky-peint-droite;
+  }
+
+  /* The painted 404 arrives (one line, 520 ms, then still). */
+  .storefront-theme main [data-testid="storefront-not-found"]::before {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) both;
+  }
+}
+
+/* 20.2 On scroll: each field and stroke below the first screen paints itself left to right as it enters (a field
+   from entry 0 % to 40 %, a stroke from 10 % to 55 %), the story photo's green stroke from the right. Titles of
+   the sections arrive with the jet. Without `animation-timeline` all of it is simply painted. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) section.bg-muted\/40::before,
+    .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.max-w-7xl > div.bg-primary.rounded-\[3rem\]::before,
+    .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div.relative.rounded-\[4rem\].bg-primary::before,
+    .storefront-theme main:has(#contact-name) div.lg\:col-span-2.space-y-6::before,
+    .storefront-theme main:has(.lucide-book-open) div.border-dashed::before,
+    .storefront-theme main:has(.lucide-book-open) section.mb-24 > div.bg-primary::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-passe;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div:has(> div.rounded-\[3rem\].border-8)::before,
+    .storefront-theme main > div.min-h-screen > article.max-w-3xl > div.flex.flex-wrap.border-t::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-passe;
+      animation-range: entry 10% entry 55%;
+    }
+
+    .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) div:has(> div.rounded-\[3rem\].border-8)::before {
+      animation-name: ky-peint-droite;
+    }
+
+    .storefront-theme main:has(div.rounded-\[3rem\].border-8.border-white) > div.min-h-screen > section:not(:first-child) h2,
+    .storefront-theme main:has(.lucide-book-open) > div.min-h-screen > section:not(:first-child) h2,
+    .storefront-theme main:has(#contact-name) div.lg\:col-span-2 h3,
+    .storefront-theme main > main.max-w-3xl > div.space-y-10 > section:not(:first-child) h2 {
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: view();
+      animation-range: entry 5% entry 45%;
+    }
+  }
+}

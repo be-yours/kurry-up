@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:46:39.193Z",
+  "modality": "image",
+  "prompt": "A contact sheet of six separate food photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each dish, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) ceramic bowls like the reference, plus brushed steel; each dish served in a deep green bowl beside a small mound of fluffy white basmati rice, with fresh coriander. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) butter chicken: creamy orange sauce, charred tandoor chicken pieces, swirl of cream; (2) poulet tikka massala: red-orange sauce with grilled chicken breast pieces, strips of green and red bell pepper and onion; (3) poulet korma: pale ivory-golden creamy sauce, chicken pieces, flaked almonds and a few golden raisins; (4) poulet karahi: a thicker, darker, spicier red-brown curry with chicken, tomato pieces, green chilli slices and ginger strips; (5) agneau karahi: deep brown rich lamb curry with tender lamb pieces, tomato, green chilli, coriander; (6) palak paneer: bright green spinach curry with white paneer cubes and potato pieces, a drizzle of cream. Absolutely no text, no letters, no logos, no printed packaging, no hands, no people. Original images, not copies of any brand's photos.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "A contact sheet of six separate food photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each dish, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) ceramic bowls like the reference, plus brushed steel; each dish served in a deep green bowl beside a small mound of fluffy white basmati rice, with fresh coriander. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) butter chicken: creamy orange sauce, charred tandoor chicken pieces, swirl of cream; (2) poulet tikka massala: red-orange sauce with grilled chicken breast pieces, strips of green and red bell pepper and onion; (3) poulet korma: pale ivory-golden creamy sauce, chicken pieces, flaked almonds and a few golden raisins; (4) poulet karahi: a thicker, darker, spicier red-brown curry with chicken, tomato pieces, green chilli slices and ginger strips; (5) agneau karahi: deep brown rich lamb curry with tender lamb pieces, tomato, green chilli, coriander; (6) palak paneer: bright green spinach curry with white paneer cubes and potato pieces, a drizzle of cream. Absolutely no text, no letters, no logos, no printed packaging, no hands, no people. Original images, not copies of any brand's photos.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2304x1536",
+    "count": 1,
+    "referenceImages": 1
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/sheet-1/20261103-104639-image-a-contact-sheet-of-six-separate-food-pho.png",
+      "mediaType": "image/png",
+      "bytes": 4910399
+    }
+  ]
+}

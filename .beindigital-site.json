@@ -1,0 +1,9 @@
+{
+  "name": "Kurry Up",
+  "slug": "kurry-up",
+  "mobile": false,
+  "template": null,
+  "templateRepo": "https://github.com/be-yours/beyours-boilerplate.git",
+  "templateVersion": "2.0.0",
+  "initializedAt": "2026-11-03T09:05:45.155Z"
+}

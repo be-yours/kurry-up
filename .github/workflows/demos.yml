@@ -1,0 +1,24 @@
+name: Démos
+
+# Validates the demos/ sales tool: 50 themes, AA contrast, layout uniqueness,
+# presence of screenshots and share pages, price consistency.
+# Hermetic (plain node, no browser, no dependencies), so it stays fast.
+
+on:
+  push:
+    branches: [main]
+    paths: ["demos/**"]
+  pull_request:
+    paths: ["demos/**"]
+
+jobs:
+  validate:
+    name: Validation des démos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Valider le catalogue de démos
+        run: node demos/scripts/validate.mjs

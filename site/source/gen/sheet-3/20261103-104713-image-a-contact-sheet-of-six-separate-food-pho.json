@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:47:13.931Z",
+  "modality": "image",
+  "prompt": "A contact sheet of six separate food photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) and off-white ceramic, brushed steel, no printing on anything. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) poulet tikka: three skewers of marinated orange-red chicken tikka with charred edges, on a steel plate with lemon wedge and a few red onion rings; (2) a cookie au chocolat au lait: a thick golden-brown cookie with melting milk-chocolate chunks, one bite taken, with a second cookie behind it; (3) pakora: four round golden fried potato fritters on a small steel plate, with a little green chutney in a tiny bowl; (4) samosa chaat: a crushed vegetable samosa topped with chickpeas, chopped red onion, white yoghurt, red and green chutney and a pinch of fresh coriander, in a shallow green bowl; (5) raita: a small green ceramic bowl of white yoghurt with grated cucumber and carrot, a pinch of cumin and a mint leaf; (6) soupe de lentilles: a green bowl of thick golden-orange lentil soup topped with fresh coriander and a few fenugreek leaves, a spoon resting beside it. Absolutely no text, no letters, no logos, no printed packaging, no hands, no people. Original images, not copies of any brand's photos.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "A contact sheet of six separate food photographs arranged in a strict grid of 3 columns by 2 rows, each subject centred in its own invisible square cell of equal size (cells are 768 by 768 px), on one continuous seamless flat matte warm cream ground (#F4E6C4), with no lines, borders or labels between cells and a generous empty margin (at least 12 percent) around each subject so nothing touches a cell edge. All six shot identically: three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left, very soft short contact shadow under each item, the same sharp realistic editorial food-photography look, real appetising colours. Crockery: matte deep forest-green (#233929) and off-white ceramic, brushed steel, no printing on anything. The reference image only shows the look of the bowl, light and food realism: do not copy its composition or ground colour. Cells, left to right, top row then bottom row: (1) poulet tikka: three skewers of marinated orange-red chicken tikka with charred edges, on a steel plate with lemon wedge and a few red onion rings; (2) a cookie au chocolat au lait: a thick golden-brown cookie with melting milk-chocolate chunks, one bite taken, with a second cookie behind it; (3) pakora: four round golden fried potato fritters on a small steel plate, with a little green chutney in a tiny bowl; (4) samosa chaat: a crushed vegetable samosa topped with chickpeas, chopped red onion, white yoghurt, red and green chutney and a pinch of fresh coriander, in a shallow green bowl; (5) raita: a small green ceramic bowl of white yoghurt with grated cucumber and carrot, a pinch of cumin and a mint leaf; (6) soupe de lentilles: a green bowl of thick golden-orange lentil soup topped with fresh coriander and a few fenugreek leaves, a spoon resting beside it. Absolutely no text, no letters, no logos, no printed packaging, no hands, no people. Original images, not copies of any brand's photos.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2304x1536",
+    "count": 1,
+    "referenceImages": 1
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/sheet-3/20261103-104713-image-a-contact-sheet-of-six-separate-food-pho.png",
+      "mediaType": "image/png",
+      "bytes": 4395795
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+/*
+ * creation.css : CLIENT ZONE. Kurry Up, « La Fresque ». Owner: the « création » agent (site/ART_DIRECTION.md §2, §12).
+ *
+ * « Votre création », wherever the formules to compose live. The seed makes them PRODUCTS WITH OPTIONS of the
+ * `formules` family (Menu Kurry Up, Bowl Kurry Up, Sandwich à composer), not engine `menus`: `FormuleCard`
+ * (components/storefront/formule-card.tsx) never renders here. So the steps are laid on the dish sheet
+ * (components/storefront/product-detail-client.tsx), on /product/[productId] and inside the quick-view dialog
+ * of /menu, in CSS only:
+ *
+ *   - a composition is told apart from a simple choice (lassi flavour, samossa filling) by its number of option
+ *     groups: four or more (`div.space-y-10:has(> div:nth-child(4))`). Bowl and sandwich have 3 required groups
+ *     + 3 optional extras, the menu 5 + 3.
+ *   - a REQUIRED group is a step (its label holds the engine's « Requis » span). One painted field per step:
+ *     1 protéine orange, 2 légumes sage, 3 toppings ochre, 4 naan and 5 drink green. A step is DONE once one of
+ *     its inputs is checked (painted in full), the first step not done is the CURRENT one (it paints itself),
+ *     the next ones are a light trace. Optional extras stay the cream slabs of menu.css.
+ *   - the step counter « Étape 2 sur 3 » is a painted number (Bungee, orange on the wall), counted by CSS
+ *     counters, sticky at the top of the options while they scroll.
+ *   - the price: the large total of the sheet, larger still on a composition.
+ * The rest of the sheet (photo, name pass, option rows, the sticky « Ajouter » slab) is menu.css (§D), whose
+ * selectors this file extends with `:has()` so it wins only on a composition.
+ *
+ * The engine caps a group at « 3 au plus », never « exactly 3 »: the copy says « jusqu'à 3 ».
+ * Default = final state; motion only under `prefers-reduced-motion: no-preference`.
+ */
+
+/* ───────────────────────────── 1. The composition and its counter ───────────────────────────── */
+
+/* The sheet of a composition: its name rides a GREEN pass (menu.css paints it with `--ky-fam`, orange for the
+   formules family), so the screen's orange is left to step 1 and to « Ajouter ». Set on the content column, the
+   nearest ancestor of the name, so it wins over the family read from the photo. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10:has(> div.space-y-10 > div:nth-child(4)) {
+  --ky-fam: var(--ky-vert-champ, #233929);
+  --ky-fam-titre: var(--ky-badigeon, #fdf3da);
+  --ky-fam-trace: var(--ky-sauge, #9fb388);
+}
+
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) {
+  counter-reset: ky-etape 0 ky-total 0 ky-groupe 0;
+  gap: clamp(0.875rem, 2vw, 1.25rem);
+}
+
+/* The counter names the step to do: the first step not done (« Étape 2 sur 5 » once the protein is chosen),
+   or the last one when all are done (« 5 sur 5 »). It counts the done steps that no undone step precedes, plus
+   one for the first undone step. The counter follows the choices, not the scroll. (`:has()` cannot sit inside
+   `:has()`: the old « all done » rule nested it, was dropped, and the counter read « 6 sur 5 ».) */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) {
+  counter-increment: ky-groupe 1 ky-total 1;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):not(div:has(label[id] > span):not(:has(input:checked)) ~ div) {
+  counter-increment: ky-groupe 1 ky-total 1 ky-etape 1;
+}
+
+/* « Étape 2 sur 3 »: the container's `::after` (it comes after the groups, so it reads the final counts),
+   moved to the top of the grid and kept in view while the options scroll. */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4))::after {
+  content: "Étape " counter(ky-etape) " sur " counter(ky-total);
+  order: -1;
+  position: sticky;
+  top: var(--ky-carte-colle, var(--ky-entete-h, 68px));
+  z-index: 4;
+  display: block;
+  margin: 0 calc(var(--ky-marge-passe, 12px) * -0.5);
+  padding: 0.5rem calc(var(--ky-marge-passe, 12px) * 0.5) 0.4rem;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-orange, #ea5800);
+  background-color: hsl(var(--background));
+  background-image: var(--ky-grain, none);
+  background-size: 240px 240px;
+}
+
+.storefront-theme[data-slot="dialog-content"] > div.p-10 > div.space-y-10:has(> div:nth-child(4))::after {
+  top: 0;
+}
+
+/* ───────────────────────────── 2. The steps: painted fields ───────────────────────────── */
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) {
+  --ky-etape-fond: var(--ky-orange, #ea5800);
+  --ky-etape-texte: var(--ky-encre, #1f1712);
+  --ky-etape-texte-2: var(--ky-encre, #1f1712);
+  --ky-etape-trace: 0.24;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3.4vw, 2.25rem);
+  padding-right: clamp(4.25rem, 9vw, 6.5rem);
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* the paint (field brush), a light trace until the step is reached */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-etape-fond);
+  opacity: var(--ky-etape-trace);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  transition: opacity var(--ky-t-couche, 160ms) var(--ky-ease-couche, ease);
+  pointer-events: none;
+}
+
+/* the step's own number, painted in the corner */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span)::after {
+  content: counter(ky-groupe);
+  position: absolute;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  right: clamp(1rem, 2.6vw, 1.75rem);
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(2.75rem, 6vw, 4.25rem);
+  line-height: 0.85;
+  font-variant-numeric: tabular-nums;
+  color: var(--ky-etape-fond);
+  pointer-events: none;
+}
+
+/* colours by rank: 1 protéine orange, 2 légumes sage, 3 toppings ochre, 4 naan and 5 drink green */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):nth-child(2) {
+  --ky-etape-fond: var(--ky-sauge, #9fb388);
+  --ky-etape-texte-2: #2b2a1f;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):nth-child(3) {
+  --ky-etape-fond: var(--ky-ocre, #e49142);
+  --ky-etape-texte-2: var(--ky-encre-2, #3a2a1c);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):is(:nth-child(4), :nth-child(5)) {
+  --ky-etape-fond: var(--ky-vert-champ, #233929);
+  --ky-etape-texte: var(--ky-badigeon, #fdf3da);
+  --ky-etape-texte-2: var(--ky-creme-ombre, #cfc6ab);
+}
+
+/* a light trace keeps the wall's text colours; a reached step (current or done) takes its paint's */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):is(:has(input:checked), :first-child, div:has(input:checked) + div) {
+  --ky-etape-trace: 1;
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):is(:has(input:checked), :first-child, div:has(input:checked) + div) label[id] {
+  color: var(--ky-etape-texte);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):is(:has(input:checked), :first-child, div:has(input:checked) + div) label[id] + p {
+  color: var(--ky-etape-texte-2);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):is(:has(input:checked), :first-child, div:has(input:checked) + div)::after {
+  color: var(--ky-etape-texte);
+}
+
+/* the step title: larger, the step's word first */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) label[id] {
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* the choices keep menu.css's washes, a little more inset from the brushed edge */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] {
+  gap: 0.5rem;
+}
+
+/* the chosen choice: an ink coat with cream letters (the pêche of menu.css would vanish on the orange step) */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) {
+  background: var(--ky-encre, #1f1712);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) span.font-bold {
+  color: var(--ky-badigeon, #fdf3da);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) > span:last-child {
+  color: var(--ky-orange-clair, #ff9a5c);
+}
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) span.border-2 {
+  border-color: var(--ky-orange, #ea5800);
+}
+
+/* in dark mode the washes are dark already: the chosen choice is the cream coat instead */
+.dark :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) {
+  background: var(--ky-badigeon, #fdf3da);
+}
+
+.dark :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) span.font-bold {
+  color: var(--ky-encre, #1f1712);
+}
+
+.dark :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span) [role] > label:has(input:checked) > span:last-child {
+  color: var(--ky-brique, #a94000);
+}
+
+/* the extras (optional groups): a quiet heading so the steps lead */
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:not(:has(label[id] > span)) {
+  box-shadow: none;
+}
+
+/* ───────────────────────────── 3. The price, large ───────────────────────────── */
+
+:is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) ~ div.pt-6:last-child > div:first-child > span:nth-child(2) {
+  font-weight: 700;
+  font-size: clamp(2.25rem, 4.4vw, 3.25rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────────────────────────── 4. /menu, family « Formules » ───────────────────────────── */
+
+/* When the « Formules » chip (rank 2) is active, the grid opens on the recipe of a creation, painted on an
+   ochre stroke (the head of the carte already holds the screen's orange). Plain text, read in order. */
+.storefront-theme section.py-12:has(> div.overflow-x-auto > button:nth-child(2).bg-primary) > div.mb-8::before {
+  content: "Compose ton plat en 2\00a0minutes\00a0: 1\00a0protéine, jusqu'à 3\00a0légumes, jusqu'à 3\00a0toppings. Le menu ajoute un naan et une boisson.";
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
+  padding: 1rem 3.6em 0.9rem 1.25rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: clamp(1rem, 1.5vw, 1.1875rem);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--ky-encre);
+  background: var(--ky-ocre);
+  mask:
+    var(--ky-brosse) center / 100% 100% no-repeat,
+    linear-gradient(#000 0 0) 0 50% / calc(100% - 3em) 62% no-repeat;
+  -webkit-mask:
+    var(--ky-brosse) center / 100% 100% no-repeat,
+    linear-gradient(#000 0 0) 0 50% / calc(100% - 3em) 62% no-repeat;
+}
+
+/* ───────────────────────────── 5. Motion ───────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* the current step paints itself when it is reached (the rule starts matching: the animation runs once) */
+  :is(.storefront-theme main, .storefront-theme[data-slot="dialog-content"]) > div.p-10 > div.space-y-10:has(> div:nth-child(4)) > div:has(label[id] > span):not(:has(input:checked)):is(:first-child, div:has(input:checked) + div)::before {
+    animation: ky-peint var(--ky-t-passe, 500ms) var(--ky-ease, ease-out) 120ms both;
+  }
+}

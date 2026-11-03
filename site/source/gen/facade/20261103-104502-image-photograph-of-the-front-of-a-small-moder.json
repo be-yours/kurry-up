@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:45:02.494Z",
+  "modality": "image",
+  "prompt": "Photograph of the front of a small modern Indian street food restaurant on a Paris street, daytime, soft warm sunny daylight, clear sky, shot straight-on at eye level with the whole shopfront centred and some pavement and a bit of the stone building above. The ground-floor facade is a large hand-painted mural made of big flat fields of colour with slightly dry brush edges: warm orange (#EA5800), deep forest green (#233929), ochre (#E49142), sage green (#9FB388) and cream (#FDF3DA), bold abstract brush-stroke shapes and simple stylised leaves and chilli silhouettes, no gradients. Large glass window and glass door showing a warm cream interior with a few pendant lamps, the sign band above the window is plain painted orange and completely blank. Two simple wooden stools and a small round steel table outside, a pot with a herb plant. No people. Absolutely no text, no letters, no numbers, no signage writing, no logo, no menu board with writing, no brand marks, no cars. Original design, not a copy of any real restaurant. Realistic architectural photography, sharp, vivid but natural colours.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "Photograph of the front of a small modern Indian street food restaurant on a Paris street, daytime, soft warm sunny daylight, clear sky, shot straight-on at eye level with the whole shopfront centred and some pavement and a bit of the stone building above. The ground-floor facade is a large hand-painted mural made of big flat fields of colour with slightly dry brush edges: warm orange (#EA5800), deep forest green (#233929), ochre (#E49142), sage green (#9FB388) and cream (#FDF3DA), bold abstract brush-stroke shapes and simple stylised leaves and chilli silhouettes, no gradients. Large glass window and glass door showing a warm cream interior with a few pendant lamps, the sign band above the window is plain painted orange and completely blank. Two simple wooden stools and a small round steel table outside, a pot with a herb plant. No people. Absolutely no text, no letters, no numbers, no signage writing, no logo, no menu board with writing, no brand marks, no cars. Original design, not a copy of any real restaurant. Realistic architectural photography, sharp, vivid but natural colours.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2048x1152",
+    "count": 1,
+    "referenceImages": 0
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/facade/20261103-104502-image-photograph-of-the-front-of-a-small-moder.png",
+      "mediaType": "image/png",
+      "bytes": 3996974
+    }
+  ]
+}

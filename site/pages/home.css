@@ -1,0 +1,1794 @@
+/*
+ * home.css : CLIENT ZONE. Kurry Up, « La Fresque ». Owner: the « accueil » agent (site/ART_DIRECTION.md §2, §9, §15).
+ *
+ * The home is the engine's `HomepageContent` (app/(storefront)/_components), CSS only: nothing is added to its DOM.
+ * Its root `main > div` holds six sections, in this DOM order:
+ *
+ *   1 section.storefront-hero          the hero: badge, h1, chapeau, « Commander », the dish and two floating badges
+ *   2 section (features strip)          five tiles, image + label, nothing focusable
+ *   3 section:has([data-slot=carousel]) « Les plus populaires »: four MealCards in an embla carousel
+ *   4 section:has(category links)       the nine families, `a[href="/menu?category=<slug>"]`
+ *   5 section:has(> div.bg-primary-hover) the CTA band: badge, h2, p, a link to /menu, one picture
+ *   6 section:has(blog links)           three latest articles (only when articles are published)
+ *
+ * The brief's order (BRIEF.md §8) is reached by `order` on the root (a flex column):
+ *
+ *   hero (promise band)          1  -> la promesse + le héros cinématique
+ *   families (4)                 2  -> les familles en échantillons de peinture
+ *   popular (3)                  3  -> le bento des plats signature sur une passe verte
+ *   CTA (5)                      4  -> « Votre création », l'aplat orange (CMS copy: see the report)
+ *   blog (6)                     5  -> « Pour les connaisseurs », l'aplat vert (three guides)
+ *   features (2)                 6  -> l'histoire en dates + Paris Washington, l'aplat sauge
+ *
+ * Focus order: the features strip has nothing focusable, so moving it is free. Families and popular dishes
+ * swap places (keyboard order: popular first); both are independent groups of links and buttons.
+ *
+ * The primitives (passes, fields, chiffre peint, buttons) are shared.css; this file cannot add their classes to
+ * engine nodes, so it applies the same tokens, masks and keyframes to the engine's own selectors.
+ * Default state = final state. Motion only inside `prefers-reduced-motion: no-preference`, scroll-driven motion
+ * only inside `@supports (animation-timeline: view())`.
+ */
+
+/* ───────────────────────────── 0. The root: order of the scenes ───────────────────────────── */
+
+.storefront-theme main > div:has(> section.storefront-hero) {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: clamp(3rem, 7vw, 6rem);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section {
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero {
+  order: -1;
+}
+
+/* popular dishes after the families once both are loaded (skeletons keep the DOM order) */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has([data-slot="carousel"]) {
+  order: 1;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) {
+  order: 4;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) {
+  order: 5;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section {
+  order: 6;
+}
+
+/* 0.1 No jump of the footer (CLS). The page arrives in three times and each one used to push the footer down:
+   (a) the server streams the header and the footer around an EMPTY `main` (a pending Suspense boundary, only a
+   `<template>` inside): the footer showed at mid-screen, then fell off it when the home arrived (0,52 of CLS);
+   (b) after hydration the popular dishes and the families are engine skeletons of another height, in the other
+   order; (c) the three guides only exist once Convex answers. The home is told apart by its transparent header
+   (the inner pages print `bg-card/90` from the first byte). Heights below are the measured final ones
+   (2026-11-03, seed of 9 families, 4 popular dishes, 3 guides). */
+.storefront-theme:has(header.bg-transparent) main:has(> template) {
+  min-height: 100lvh;
+}
+
+/* (b) the skeletons take the final order (families, then popular) and the final heights */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]) {
+  --ky-reserve: 104rem;
+  min-height: var(--ky-reserve);
+  order: 1;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]:nth-child(5)) {
+  --ky-reserve: 76.5rem;
+  order: 0;
+}
+
+/* the families' skeleton takes the real chart's box (§2: the wall's column, 1-2 rem of padding), so its head
+   does not jump in when the chart arrives: on a 1920 x 1080 screen that head is in the first view */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]:nth-child(5)) {
+  max-width: none;
+  width: var(--ky-wrap);
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem) 0;
+}
+
+/* (c) the guides: a reserved, empty flex item in their place (order 5) while the skeletons are up */
+.storefront-theme main > div:has(> section.storefront-hero):has(> section > div.grid > [data-slot="skeleton"]):not(:has(> section a[href^="/blog/"]))::after {
+  content: "";
+  order: 5;
+  flex: none;
+  height: 88rem;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]) {
+    --ky-reserve: 89.5rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]:nth-child(5)) {
+    --ky-reserve: 75.75rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero):has(> section > div.grid > [data-slot="skeleton"]):not(:has(> section a[href^="/blog/"]))::after {
+    height: 45.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]) {
+    --ky-reserve: 60.25rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]:nth-child(5)) {
+    --ky-reserve: 67.5rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero):has(> section > div.grid > [data-slot="skeleton"]):not(:has(> section a[href^="/blog/"]))::after {
+    height: 48.625rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]) {
+    --ky-reserve: 63.75rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]:nth-child(5)) {
+    --ky-reserve: 79.625rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero):has(> section > div.grid > [data-slot="skeleton"]):not(:has(> section a[href^="/blog/"]))::after {
+    height: 50.625rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]) {
+    --ky-reserve: 65rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.grid > [data-slot="skeleton"]:nth-child(5)) {
+    --ky-reserve: 80.9375rem;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero):has(> section > div.grid > [data-slot="skeleton"]):not(:has(> section a[href^="/blog/"]))::after {
+    height: 51.875rem;
+  }
+}
+
+/* Section heads shared by the families, the bento and the guides: the engine's `Heading`. */
+.storefront-theme main > div:has(> section.storefront-hero) > section :is(h2) {
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+  margin-bottom: 0;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section h2 > span {
+  font-style: normal;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section [data-slot="badge"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: normal;
+  color: var(--ky-texte-2);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section [data-slot="badge"]::before {
+  content: "";
+  flex: none;
+  width: 1.75rem;
+  height: 0.6rem;
+  background: var(--ky-surtitre-trace, var(--ky-ocre));
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* ───────────────────────────── 1. Le héros (§9) ───────────────────────────── */
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero {
+  --ky-bande-h: clamp(7rem, 13vw, 9.5rem);
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  background: transparent;
+  border-radius: 0;
+  padding: calc(var(--ky-entete-h) + clamp(1.25rem, 4vw, 3rem)) 0
+    calc(var(--ky-bande-h) + var(--ky-marge-passe) + clamp(1.5rem, 3vw, 2.5rem));
+  view-timeline: --ky-heros block;
+}
+
+/* Store closed (outside opening hours): the engine's banner (fixed, 40 px, `h-10`) sits above the bar and pushes
+   it down by 40 px; the hero follows the bar, or its first line (the promise) slid under it on phone and tablet.
+   The banner arrives with the store's status, after the first paint: the hero moves by `translate` (no layout
+   shift: a 40 px padding cost 0,04 of CLS at 375), and its bottom margin gives the next scene back its gap. */
+.storefront-theme:has(> div.fixed.top-0.h-10.z-50) main > div:has(> section.storefront-hero) > section.storefront-hero {
+  translate: 0 40px;
+}
+
+/* (below 1024 px, where the gap is under 61 px; the next scene is then below the first view, so the margin moves nothing on screen) */
+@media (max-width: 1023px) {
+  .storefront-theme:has(> div.fixed.top-0.h-10.z-50) main > div:has(> section.storefront-hero) > section.storefront-hero {
+    margin-bottom: 40px;
+  }
+}
+
+/* the engine's blurred bubbles */
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero > div:first-child:not(.storefront-hero-row) {
+  display: none;
+}
+
+/* The ochre band at the foot of the hero: the promise, painted (shared field brush, inset from the edges). */
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero::after {
+  content: "";
+  position: absolute;
+  left: var(--ky-marge-passe);
+  right: var(--ky-marge-passe);
+  bottom: var(--ky-marge-passe);
+  height: var(--ky-bande-h);
+  z-index: 0;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* The row: one column on phone and tablet (the dish under the title), two from 1024 px. Static, so the two
+   floating badges position against the section and land on the band (see the dish box below). */
+.storefront-theme section.storefront-hero .storefront-hero-row {
+  position: static;
+  z-index: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  width: var(--ky-wrap);
+  max-width: none;
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme section.storefront-hero .storefront-hero-row {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+  }
+}
+
+/* framer writes opacity 0 / translateX(-50px) / scale(.8) rotate(-10deg) in the server HTML: « Commander » must
+   be visible at first paint and nothing tilts. The site's own load motion is below. */
+.storefront-theme section.storefront-hero :is(.storefront-hero-text, .storefront-hero-media) {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  min-width: 0;
+}
+
+/* the promise, as the hero's eyebrow (CMS `hero.badge`) */
+.storefront-theme section.storefront-hero .storefront-hero-text [data-slot="badge"] {
+  margin-bottom: clamp(1rem, 2.4vw, 1.75rem);
+  max-width: 46ch;
+  color: var(--ky-texte-2);
+  /* two even lines on a phone, never « MAX » alone (the seed also ties « 1 h max ») */
+  text-wrap: balance;
+}
+
+.storefront-theme section.storefront-hero h1 {
+  margin: 0 0 clamp(1.25rem, 3vw, 2rem);
+  font-size: clamp(2.5rem, 6.4vw, 6.25rem);
+  /* Bungee's accented capitals climb to 0,97 em: below 1 the grave of « À PARIS » bit the S of « STREET » */
+  line-height: 1.02;
+  text-transform: uppercase;
+  color: var(--ky-texte);
+  filter: none;
+  text-shadow: none;
+}
+
+/* « Fresh Indian », the braced words of the title: the orange pass with cream letters (large text, 3,22:1). */
+.storefront-theme section.storefront-hero h1 > span {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  margin-left: -0.3em;
+  padding: 0.16em 0.5em 0.1em;
+  font-style: normal;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme section.storefront-hero h1 > span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text > p {
+  max-width: 40ch;
+  margin: 0 0 clamp(1.5rem, 3.5vw, 2.25rem);
+  font-family: var(--ky-font-texte);
+  font-weight: 500;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+  filter: none;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text > div {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* « Commander »: the shared button (`.ky-btn`), on the engine's link. */
+.storefront-theme section.storefront-hero .storefront-hero-text a[data-slot="button"] {
+  position: relative;
+  isolation: isolate;
+  width: auto;
+  height: auto;
+  min-height: 48px;
+  padding: 0.75rem 1.75rem;
+  gap: 0.6rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  color: var(--ky-encre);
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text a[data-slot="button"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text a[data-slot="button"]:hover {
+  color: var(--ky-encre);
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text a[data-slot="button"]:hover::before {
+  background: var(--ky-orange-vif);
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-text a[data-slot="button"] svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  translate: none;
+}
+
+/* The dish, on a green pass laid from the right. The engine's motion wrapper becomes a one-cell grid capped at
+   `--ky-cap-hero`; the green pass and the picture sit in the same cell. The engine's square box around the
+   `fill` image is `position: relative` (next/image wants a positioned parent) but `display: contents`: it draws
+   no box, so it is no containing block and the two floating badges still position against the section. Its
+   `::before` (the green pass) and the picture become items of the wrapper's grid. */
+.storefront-theme section.storefront-hero .storefront-hero-media {
+  position: static;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  width: 100%;
+  max-width: none;
+  height: var(--ky-cap-hero);
+  margin: 0;
+  min-width: 0;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) {
+  position: relative;
+  display: contents;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme section.storefront-hero .storefront-hero-media {
+    height: min(var(--ky-cap-hero), 52svh);
+  }
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film)::before {
+  content: "";
+  grid-area: 1 / 1;
+  align-self: center;
+  height: 62%;
+  margin-inline: calc(var(--ky-marge-passe) * -0.5);
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > img {
+  position: relative !important;
+  inset: auto !important;
+  grid-area: 1 / 1;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  scale: none;
+  z-index: 1;
+  filter: drop-shadow(0 26px 26px rgb(90 50 10 / 0.24));
+}
+
+/* The two floating badges become the painted promise on the ochre band: « 10 MIN retrait sur place » and
+   « 1 H MAX livraison » (CMS `floatingBadge1/2`). framer floats them once: neutralised. */
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div {
+  position: absolute;
+  top: auto;
+  right: auto;
+  bottom: calc(var(--ky-marge-passe) + var(--ky-bande-h) / 2);
+  z-index: 2;
+  translate: 0 50%;
+  transform: none !important;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div:nth-of-type(1) {
+  left: max(calc(var(--ky-marge-passe) + 1.25rem), calc((100% - 1240px) / 2 + 1.5rem));
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div:nth-of-type(2) {
+  left: calc(50% + 0.5rem);
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div:is(:nth-of-type(1), :nth-of-type(2)) {
+  max-width: calc(50% - var(--ky-marge-passe) - 2rem);
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div > div {
+  gap: 0;
+}
+
+/* the engine's round icon (star, clock): not on a wall */
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div > div > div:first-child {
+  display: none;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div p {
+  margin: 0;
+  opacity: 1;
+  color: var(--ky-encre);
+}
+
+/* the painted number (chiffre peint, encre on ochre) */
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div p:first-child {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(1.5rem, 4vw + 0.4rem, 3.75rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div p:last-child {
+  margin-top: 0.35rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ky-encre-2);
+}
+
+/* 1.1 « Le film peint » (§9, Hero vidéo). The brand's film, portalled by site/components/home/HeroFilm.tsx into
+   the media box: one more item of its 1-cell grid, so the reserved height does not move (no CLS). The window is
+   a field of paint (`--ky-brosse-champ`, whole, inset from the screen edge by `--ky-marge-passe`), 3:2 like the
+   film (a 4:3 window cut the « P » of the awning), centred under the title on phone and tablet; from 1024 px it reaches the
+   right margin of the screen (never to the left: the title's orange pass ends close to the column). Until the first frame is decoded it is invisible and the
+   engine's dish stays the picture (it also stays without script, under `reduce`, Save-Data or a refused play). */
+.storefront-theme section.storefront-hero .storefront-hero-media > .ky-film {
+  position: relative;
+  z-index: 3;
+  display: block;
+  grid-area: 1 / 1;
+  align-self: center;
+  /* (an item with an aspect ratio does not stretch by default: the width is set, and stretched from 1024 px) */
+  justify-self: center;
+  width: min(100%, calc(var(--ky-cap-hero) * 3 / 2));
+  max-height: 100%;
+  aspect-ratio: 3 / 2;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media > .ky-film[data-ky-film="joue"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.storefront-theme section.storefront-hero .ky-film__fenetre {
+  position: absolute;
+  inset: 0;
+  background: var(--ky-vert);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+}
+
+.storefront-theme section.storefront-hero .ky-film__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* the pause button: a cream dab of the short brush, ink icon (10,78:1), 44 px target, no ring */
+.storefront-theme section.storefront-hero .ky-film__pause {
+  position: absolute;
+  right: clamp(0.75rem, 3%, 1.5rem);
+  bottom: clamp(0.75rem, 5%, 1.5rem);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ky-charbon, #373737);
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.storefront-theme section.storefront-hero .ky-film__pause::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-badigeon, #fdf3da);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme section.storefront-hero .ky-film__pause:hover::before {
+  background: var(--ky-peche, #fbe3c4);
+}
+
+/* Under the film the dish leaves once the window is painted, and the green pass slides down-left to become the layer the film is painted
+   on: its brushed edge shows under the window. By `transform` (no layout shift; `translate` is the desktop
+   recouvrement's, the flip `scale(-1, 1)` is kept). */
+.storefront-theme section.storefront-hero .storefront-hero-media:has(> .ky-film[data-ky-film="joue"]) > div:not(.ky-film) > img {
+  /* visibility, not opacity: the dish's load jet (ky-jet, fill both) holds its opacity */
+  visibility: hidden;
+  transition: visibility 0s linear 900ms;
+}
+
+.storefront-theme section.storefront-hero .storefront-hero-media:has(> .ky-film[data-ky-film="joue"]) > div:not(.ky-film)::before {
+  transform: translate(0, 30%) scale(-1, 0.94);
+}
+
+@media (min-width: 1024px) {
+  /* the window reaches the right margin of the screen (whole, inset by --ky-marge-passe) */
+  .storefront-theme section.storefront-hero .storefront-hero-media > .ky-film {
+    justify-self: stretch;
+    width: auto;
+    margin-right: min(0px, calc(var(--ky-marge-passe) - (100vw - min(1240px, 100vw - 3rem)) / 2));
+  }
+
+  /* 1024 to 1279 px: the title holds on one line and its pass ends well before the column; the film takes 3 rem
+     of the gutter */
+  @media (max-width: 1279px) {
+    .storefront-theme section.storefront-hero .storefront-hero-media > .ky-film {
+      margin-left: -3rem;
+    }
+  }
+
+  .storefront-theme section.storefront-hero .storefront-hero-media:has(> .ky-film[data-ky-film="joue"]) > div:not(.ky-film)::before {
+    transform: translate(-5%, 34%) scale(-1, 0.86);
+  }
+}
+
+/* From 1440 px the wall is wider than the 1240 px column: reaching the screen's right margin left the film 24 px
+   from the right edge for a title 100 to 340 px from the left one. The hero row widens instead (1600 px at
+   most, 3 rem of wall each side), the film stops at the row's right edge, and the columns give the film a bit
+   more room: the title and the film now stand at the same distance from either edge (48 px at 1440, 160 px at
+   1920); the film is 570 px wide at 1440 (493 before) and 683 at 1920 (733 before). */
+@media (min-width: 1440px) {
+  .storefront-theme section.storefront-hero .storefront-hero-row {
+    width: min(100% - 6rem, 1600px);
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  }
+
+  .storefront-theme section.storefront-hero .storefront-hero-media > .ky-film {
+    margin-right: 0;
+  }
+
+  /* the first painted number on the ochre band follows the title's edge */
+  .storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > div:nth-of-type(1) {
+    left: calc((100% - min(100% - 6rem, 1600px)) / 2 + 1.5rem);
+  }
+}
+
+/* ───────────────────────────── 2. Les familles : échantillons de peinture ───────────────────────────── */
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/menu?category="]) {
+  max-width: none;
+  width: var(--ky-wrap);
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem) 0;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:is(:has(> div > a[href^="/menu?category="]), :has(> div.grid > [data-slot="skeleton"]:nth-child(5))) > div:first-child {
+  align-items: flex-start;
+  text-align: left;
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:is(:has(> div > a[href^="/menu?category="]), :has(> div.grid > [data-slot="skeleton"]:nth-child(5))) > div:first-child > div {
+  align-items: flex-start;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) h2 {
+  margin-bottom: 1rem;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) h2 > span {
+  color: var(--ky-mot);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:is(:has(> div > a[href^="/menu?category="]), :has(> div.grid > [data-slot="skeleton"]:nth-child(5))) > div:first-child p {
+  max-width: 46ch;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-texte-2);
+}
+
+/* The chart: a 2-column grid on phone, 3 on tablet, 4 on desktop; « Formules » (the families to compose) is the
+   large swatch. */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: clamp(0.625rem, 1.4vw, 1.125rem);
+  view-timeline: --ky-familles block;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href="/menu?category=formules"] {
+  grid-column: span 2;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href="/menu?category=formules"] {
+    grid-row: span 2;
+  }
+}
+
+/* One swatch: a link holding the engine card. The paint is the card's `::before`, masked by the field brush.
+   Colour per family, by address (the menu chips use the same mapping, §11). */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a {
+  --ky-sw: var(--ky-chaux);
+  --ky-sw-texte: var(--ky-charbon);
+  --ky-sw-texte-2: var(--ky-gris);
+  display: block;
+  height: 100%;
+  border-radius: var(--ky-r-ctrl);
+  text-decoration: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a:focus-visible {
+  box-shadow: none;
+  outline: 3px solid var(--ky-focus);
+  outline-offset: 3px;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=formules"] {
+  --ky-sw: var(--ky-orange);
+  --ky-sw-texte: var(--ky-encre);
+  --ky-sw-texte-2: var(--ky-encre);
+}
+
+/* Chicken is an orange family too, but its swatch touches « Formules » (beside it at 768 px, under it on a
+   phone): the second coat of the same paint, brique, with cream letters (5,56:1). One orange per screen. */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=plats-poulet"] {
+  --ky-sw: var(--ky-brique);
+  --ky-sw-texte: var(--ky-badigeon);
+  --ky-sw-texte-2: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=entrees"],
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=boissons"] {
+  --ky-sw: var(--ky-ocre);
+  --ky-sw-texte: var(--ky-encre);
+  --ky-sw-texte-2: var(--ky-encre-2);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=plats-agneau"],
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=biryanis"] {
+  --ky-sw: var(--ky-vert-champ);
+  --ky-sw-texte: var(--ky-badigeon);
+  --ky-sw-texte-2: var(--ky-creme-ombre);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=legumes"],
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=desserts"] {
+  --ky-sw: var(--ky-sauge);
+  --ky-sw-texte: var(--ky-encre);
+  --ky-sw-texte-2: #2b2a1f;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=naans"] {
+  --ky-sw: var(--ky-charbon);
+  --ky-sw-texte: var(--ky-badigeon);
+  --ky-sw-texte-2: var(--ky-creme-ombre);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  height: 100%;
+  min-height: clamp(8.5rem, 17vw, 12.5rem);
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1rem, 2.2vw, 1.75rem);
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  transform: none !important;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-sw);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  transition: filter var(--ky-t-couche) var(--ky-ease-couche);
+  pointer-events: none;
+}
+
+/* the next coat on hover: the same paint, one coat brighter (no tilt, no lift, no zoom) */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a:is(:hover, :focus-visible) > div::before {
+  filter: brightness(1.1) saturate(1.06);
+}
+
+/* the family picture (a dish packshot on its cream ground): a photo inside the swatch, corners inside the
+   paint; the engine's « 🍽️ » placeholder is not drawn */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div > div:first-child {
+  position: relative;
+  flex: none;
+  width: 100%;
+  height: clamp(5.5rem, 11vw, 8.5rem);
+  margin: 0 0 auto;
+  border-radius: var(--ky-r-photo);
+  background: var(--ky-chaux);
+  font-size: 0;
+  transform: none;
+  rotate: none;
+  scale: none;
+  transition: none;
+  overflow: clip;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div > div:first-child:not(:has(img)) {
+  display: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div > div:first-child img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  rotate: none;
+  scale: none;
+}
+
+/* From 768 px a swatch beside « Formules » (two rows tall) is stretched by its row: the picture takes the extra
+   height instead of a bare gap between the picture and the name (« Plats de poulet » at 768). The fixed height
+   becomes the minimum; the picture is laid over its box so it never adds height of its own. */
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a:not([href$="=formules"]) > div > div:first-child {
+    flex: 1 0 auto;
+    height: auto;
+    min-height: clamp(5.5rem, 11vw, 8.5rem);
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a:not([href$="=formules"]) > div > div:first-child img {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=formules"] > div > div:first-child {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 12rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a h3 {
+  margin: 0.6rem 0 0;
+  max-width: 100%;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  color: var(--ky-sw-texte);
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a h3 {
+    font-family: var(--ky-font-titre);
+    font-weight: 400;
+    font-synthesis: none;
+    font-size: 1.75rem;
+    line-height: 0.98;
+    letter-spacing: 0.005em;
+    overflow-wrap: normal;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a[href$="=formules"] h3 {
+    font-size: clamp(2.25rem, 4.4vw, 3.75rem);
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a p {
+  margin: 0;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ky-sw-texte-2);
+}
+
+/* the engine's round chevron that fades in on hover: a framed round element, not drawn */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div > div:last-child:not(:first-child) {
+  display: none;
+}
+
+/* ───────────────────────────── 3. Le bento des plats signature, sur une passe verte ───────────────────────────── */
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has([data-slot="carousel"]) {
+  position: relative;
+  isolation: isolate;
+  max-width: none;
+  width: calc(100% - 2 * var(--ky-marge-passe));
+  margin-inline: var(--ky-marge-passe);
+  padding: clamp(2.75rem, 7vw, 6rem) max(clamp(1.25rem, 5vw, 4.5rem), calc((100% - 1240px) / 2));
+  overflow: visible;
+  color: var(--ky-badigeon);
+  view-timeline: --ky-bento block;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has([data-slot="carousel"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child {
+  align-items: flex-start;
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+  gap: 1rem 2rem;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child > div {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) h2 {
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) h2 > span {
+  color: var(--ky-orange-clair);
+}
+
+/* the engine's thin orange bar under the title: a short ochre dab instead */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child > div > div {
+  width: 4.5rem;
+  height: 0.85rem;
+  margin: 1rem 0 0;
+  border-radius: 0;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+/* « Toute la carte »: the action link (`.ky-lien`), cream on the green pass */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child > a > button,
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div:first-child > a > button {
+  position: relative;
+  isolation: isolate;
+  height: auto;
+  min-height: 44px;
+  padding: 0 0.2em;
+  border-radius: 0;
+  background: none;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child > a > button::after,
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div:first-child > a > button::after {
+  content: "";
+  position: absolute;
+  left: -0.2em;
+  right: -0.2em;
+  bottom: 0.45rem;
+  height: 0.38em;
+  z-index: -1;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  transition: height var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child > a > button:hover,
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div:first-child > a > button:hover {
+  background: none;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) > div:first-child > a:hover > button::after,
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div:first-child > a:hover > button::after {
+  height: 0.75em;
+}
+
+/* The carousel becomes a still grid: no carousel on this site (§7). embla keeps its listeners; its inline
+   transforms are neutralised and the arrows are not drawn. */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-content"] {
+  overflow: visible;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-content"] > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.125rem);
+  margin: 0;
+  padding: 0;
+  transform: none !important;
+  view-timeline: --ky-tuiles block;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"] {
+  min-width: 0;
+  padding: 0;
+  transform: none !important;
+}
+
+/* big tile: poulet tikka massala ; wide: butter chicken ; small: poulet tikka, poulet korma.
+   Phone: one column. Tablet: the first two tiles wide, the last two side by side. */
+@media (min-width: 640px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-content"] > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"]:nth-child(-n + 2) {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-content"] > div {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: min(38svh, 340px);
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"]:nth-child(2) {
+    grid-column: span 2;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"]:nth-child(1) {
+    grid-row: span 2;
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel"] > div:last-child:not([data-slot="carousel-content"]) {
+  display: none;
+}
+
+/* The tiles keep the dish card of menu.css (§C, the « carte » agent's skin). This file only lays the bento:
+   on desktop the rows have a fixed height and the photo box takes what the card body leaves, so the big
+   tile is a big photo (capped by the row height: two rows stay under 70 svh). */
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"] > .group > div.aspect-\[4\/3\] {
+    flex: 1 1 auto;
+    min-height: 0;
+    aspect-ratio: auto;
+    max-height: none;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"] > .group > div.p-8 {
+    flex: none;
+  }
+}
+
+/* ───────────────────────────── 4. « Votre création » : l'aplat orange ───────────────────────────── */
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) {
+  padding: 0;
+  overflow: visible;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  margin-inline: var(--ky-marge-passe);
+  padding: clamp(2.75rem, 7vw, 6rem) max(clamp(1.25rem, 5vw, 4.5rem), calc((100% - 1240px) / 2));
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+  color: var(--ky-encre);
+  view-timeline: --ky-creation block;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-orange);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative {
+  order: 1;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:first-child {
+  margin-bottom: clamp(1.5rem, 4vw, 2.75rem);
+  text-align: left;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) [data-slot="badge"] {
+  --ky-surtitre-trace: var(--ky-encre);
+  margin-bottom: 1rem;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) h2 {
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 0.98;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-encre);
+}
+
+/* the braced word: an ink stroke with cream letters, painted on the orange */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) h2 > span {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  padding: 0.14em 0.45em 0.08em;
+  font-style: normal;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) h2 > span::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-encre);
+  mask: var(--ky-brosse) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child {
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child > div:first-child {
+  text-align: left;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) p {
+  max-width: 44ch;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
+  font-family: var(--ky-font-texte);
+  font-weight: 600;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--ky-encre);
+}
+
+/* the button on the orange field: ink fill, cream label (shared rule for `.ky-btn` on a field) */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) a > button[data-slot="button"] {
+  position: relative;
+  isolation: isolate;
+  width: auto;
+  height: auto;
+  min-height: 48px;
+  padding: 0.75rem 1.75rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  scale: none;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) a > button[data-slot="button"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-encre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) a > button[data-slot="button"]:hover {
+  background: none;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) a > button[data-slot="button"]:hover::before {
+  background: var(--ky-encre-2);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) a > button[data-slot="button"] svg {
+  translate: none;
+}
+
+/* the picture (CMS `cta.backgroundImage`): capped, corners inside the field, no veil, no zoom */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child > div:last-child {
+  margin-top: 0;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child > div:last-child > div {
+  height: var(--ky-cap-scene);
+  max-height: var(--ky-cap-scene);
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: var(--ky-r-photo);
+  box-shadow: var(--ky-ombre);
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child > div:last-child > div {
+    height: min(var(--ky-cap-scene), 460px);
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child > div:last-child > div > img {
+  scale: none;
+  transition: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div.relative > div:last-child > div:last-child > div > div {
+  display: none;
+}
+
+/* The steps, painted under the offer: the engine's decorative bubbles (two empty divs) are laid out as a grid,
+   their `::before` / `::after` are four strokes. The words also stand in the CMS sentence above, so the strokes
+   carry an empty alternative (`/ ""`), with a plain fallback where that syntax is unknown. */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child {
+  position: static;
+  order: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.5rem, 1.2vw, 0.875rem);
+  width: auto;
+  height: auto;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  pointer-events: none;
+  view-timeline: --ky-etapes block;
+}
+
+@media (min-width: 640px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div {
+  display: contents;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div::before,
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div::after {
+  display: flex;
+  align-items: center;
+  min-height: 4.75rem;
+  padding: 0.55em 1.6em 0.45em 0.9em;
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(1.75rem, 2.3vw, 2.125rem);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: normal;
+  /* union of the stroke and a plain core: the letters are never cut by a bristle streak */
+  mask:
+    var(--ky-brosse) center / 100% 100% no-repeat,
+    linear-gradient(#000 0 0) 46% 50% / 76% 58% no-repeat;
+  -webkit-mask:
+    var(--ky-brosse) center / 100% 100% no-repeat,
+    linear-gradient(#000 0 0) 46% 50% / 76% 58% no-repeat;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(1)::before {
+  content: "1\00a0protéine";
+  content: "1\00a0protéine" / "";
+  background: var(--ky-encre);
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(1)::after {
+  content: "Jusqu'à 3\00a0légumes";
+  content: "Jusqu'à 3\00a0légumes" / "";
+  background: var(--ky-sauge);
+  color: var(--ky-encre);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(2)::before {
+  content: "Jusqu'à 3\00a0toppings";
+  content: "Jusqu'à 3\00a0toppings" / "";
+  background: var(--ky-ocre);
+  color: var(--ky-encre);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(2)::after {
+  content: "+\00a0naan et boisson";
+  content: "+\00a0naan et boisson" / "";
+  background: var(--ky-vert);
+  color: var(--ky-badigeon);
+}
+
+/* ───────────────────────────── 5. « Pour les connaisseurs » : l'aplat vert (blog block) ───────────────────────────── */
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) {
+  position: relative;
+  isolation: isolate;
+  max-width: none;
+  width: calc(100% - 2 * var(--ky-marge-passe));
+  margin-inline: var(--ky-marge-passe);
+  padding: clamp(2.75rem, 7vw, 6rem) max(clamp(1.25rem, 5vw, 4.5rem), calc((100% - 1240px) / 2));
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ky-badigeon);
+  view-timeline: --ky-connaisseurs block;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-vert-champ);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div:first-child {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 2rem;
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+  padding: 0;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) h2 {
+  margin-bottom: 0;
+  color: var(--ky-badigeon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) h2 > span {
+  color: var(--ky-orange-clair);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div:first-child > div > div {
+  width: 4.5rem;
+  height: 0.85rem;
+  margin-top: 1rem;
+  border-radius: 0;
+  background: var(--ky-ocre);
+  mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-courte) center / 100% 100% no-repeat;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.875rem, 2vw, 1.5rem);
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a {
+  display: block;
+  border-radius: var(--ky-r-dalle);
+  text-decoration: none;
+}
+
+/* each guide: a cream slab on the green field (no border, no frame) */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a > div {
+  gap: 1rem;
+  height: 100%;
+  padding: 0.75rem 0.75rem 1.25rem;
+  border-radius: var(--ky-r-dalle);
+  background: var(--ky-dalle);
+  box-shadow: var(--ky-ombre-courte);
+  transition: background-color var(--ky-t-couche) var(--ky-ease-couche);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a:is(:hover, :focus-visible) > div {
+  background: var(--ky-peche);
+}
+
+.dark .storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a:is(:hover, :focus-visible) > div {
+  background: var(--ky-vert);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a > div > div:first-child {
+  height: var(--ky-cap-plat);
+  aspect-ratio: auto;
+  border-radius: var(--ky-r-photo);
+  box-shadow: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a > div > div:first-child img {
+  scale: none;
+  transition: none;
+}
+
+/* the date chip: a cream label on the photo */
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a > div > div:first-child > div:last-child {
+  top: 0.75rem;
+  left: 0.75rem;
+  width: auto;
+  height: auto;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--ky-r-ctrl);
+  background: var(--ky-dalle-claire);
+  box-shadow: var(--ky-ombre-courte);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a > div > div:first-child > div:last-child > span {
+  color: var(--ky-charbon);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a > div > div:first-child > div:last-child > span:last-child {
+  color: var(--ky-brique);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a h3 {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--ky-texte);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"]) > div.grid > a h3 + div {
+  margin-top: 1rem;
+  color: var(--ky-mot);
+  translate: none;
+}
+
+/* ───────────────────────────── 6. Notre histoire + Paris Washington : l'aplat sauge (features strip) ───────────────────────────── */
+
+/* The features strip has no title of its own: the eyebrow and the title are generated text (read by screen
+   readers as plain text). The five tiles carry the CMS labels; the painted figure of each tile is its `::before`. */
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section {
+  position: relative;
+  isolation: isolate;
+  z-index: auto;
+  max-width: none;
+  width: calc(100% - 2 * var(--ky-marge-passe));
+  margin-inline: var(--ky-marge-passe);
+  padding: clamp(2.75rem, 7vw, 6rem) max(clamp(1.25rem, 5vw, 4.5rem), calc((100% - 1240px) / 2));
+  color: var(--ky-encre);
+  view-timeline: --ky-histoire block;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ky-sauge);
+  mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse-champ) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section::before {
+  content: "Notre histoire";
+  display: block;
+  margin-bottom: 1rem;
+  font-family: var(--ky-font-texte);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2b2a1f;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 2.4vw, 2rem);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid::before {
+  content: "De Mahatma à Kurry\00a0Up";
+  grid-column: 1 / -1;
+  margin-bottom: clamp(0.5rem, 2vw, 1.5rem);
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--ky-encre);
+}
+
+@media (min-width: 640px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(5) {
+    grid-column: auto;
+  }
+}
+
+/* one tile: no card, no border, no hover zoom; the date painted, the label, the picture */
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  justify-items: start;
+  gap: 0.6rem;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  text-align: left;
+  scale: none;
+  transition: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div::before {
+  font-family: var(--ky-font-titre);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(2.5rem, 4.2vw, 3.75rem);
+  line-height: 0.85;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ky-vert);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(1)::before {
+  content: "1965";
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(2)::before {
+  content: "2015";
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(3)::before {
+  content: "2023";
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(4)::before {
+  content: "8e";
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div:nth-child(5)::before {
+  content: "7\00a0j/7";
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div > p {
+  order: 2;
+  margin: 0;
+  max-width: 30ch;
+  font-family: var(--ky-font-texte);
+  font-weight: 700;
+  font-style: normal;
+  font-size: 1rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--ky-encre);
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div > div {
+  order: 3;
+  width: 100%;
+  height: clamp(7.5rem, 14vw, 10rem);
+  max-height: 30svh;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  border-radius: var(--ky-r-photo);
+  background: none;
+  scale: none;
+  transition: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div > div:not(:has(img)) {
+  display: none;
+}
+
+.storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div > div img {
+  padding: 0;
+  object-fit: cover;
+  filter: none;
+}
+
+/* ───────────────────────────── 7. Motion ───────────────────────────── */
+
+@keyframes ky-accueil-ecart {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 calc(var(--ky-recouvrement) * -1);
+  }
+}
+
+/* 7.1 The cinematic of the hero, at load, 1,4 s, then nothing (§9). « Commander » is never delayed. */
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-theme section.storefront-hero .storefront-hero-text [data-slot="badge"] {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) 0ms both;
+  }
+
+  .storefront-theme section.storefront-hero h1 {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) 70ms both;
+  }
+
+  .storefront-theme section.storefront-hero h1 > span::before {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 0ms both;
+  }
+
+  .storefront-theme section.storefront-hero .storefront-hero-text > p {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) 140ms both;
+  }
+
+  .storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film)::before {
+    animation: ky-peint-droite var(--ky-t-passe) var(--ky-ease) 300ms both;
+  }
+
+  .storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film) > img {
+    animation: ky-jet var(--ky-t-jet) var(--ky-ease) 700ms both;
+  }
+
+  .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero::after {
+    animation: ky-peint var(--ky-t-passe) var(--ky-ease) 900ms both;
+  }
+
+  /* the film window paints itself over the dish, left to right, once its first frame is there (never before
+     1,4 s); inside the film, each change of plan is the same pass (site/tools/video.mjs) */
+  .storefront-theme section.storefront-hero .storefront-hero-media > .ky-film[data-ky-film="joue"] .ky-film__fenetre {
+    animation: ky-peint 900ms var(--ky-ease) both;
+  }
+
+  .storefront-theme section.storefront-hero .storefront-hero-media:has(> .ky-film[data-ky-film="joue"]) > div:not(.ky-film)::before {
+    transition: transform 700ms var(--ky-ease);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* 7.2 The fields paint themselves as they enter (shared grammar, `entry 0%` to `entry 40%`). */
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has([data-slot="carousel"])::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-bento;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-creation;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(a[href^="/blog/"])::before {
+      animation: ky-peint-droite linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-connaisseurs;
+      animation-range: entry 0% entry 40%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section::after {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-histoire;
+      animation-range: entry 0% entry 40%;
+    }
+
+    /* 7.3 The swatches paint one after the other, by thirds of the chart. */
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a > div::before {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-familles;
+      animation-range: entry 5% entry 40%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a:nth-child(3n + 2) > div::before {
+      animation-range: entry 10% entry 48%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div > a[href^="/menu?category="]) > div.grid > a:nth-child(3n) > div::before {
+      animation-range: entry 15% entry 56%;
+    }
+
+    /* 7.4 The bento tiles arrive (le jet), 4 % of range apart. */
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"] {
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-tuiles;
+      animation-range: entry 5% entry 45%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"]:nth-child(2) {
+      animation-range: entry 9% entry 49%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"]:nth-child(3) {
+      animation-range: entry 13% entry 53%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> [data-slot="carousel"]) [data-slot="carousel-item"]:nth-child(4) {
+      animation-range: entry 17% entry 57%;
+    }
+
+    /* 7.5 The steps of « Votre création » are painted in turn. */
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div::before,
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div::after {
+      animation: ky-peint linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-etapes;
+      animation-range: entry 10% entry 50%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(1)::after {
+      animation-range: entry 25% entry 65%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(2)::before {
+      animation-range: entry 40% entry 80%;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section:has(> div.bg-primary-hover) > div.bg-primary-hover > div:first-child > div:nth-child(2)::after {
+      animation-range: entry 55% entry 95%;
+    }
+
+    /* 7.6 The dates of the story arrive one after the other. */
+    .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div {
+      view-timeline: --ky-date block;
+    }
+
+    .storefront-theme main > div:has(> section.storefront-hero) > section.storefront-hero + section > div.grid > div::before {
+      display: block;
+      animation: ky-jet linear both;
+      animation-timing-function: var(--ky-ease);
+      animation-timeline: --ky-date;
+      animation-range: entry 10% entry 60%;
+    }
+  }
+}
+
+/* 7.7 Le recouvrement (desktop): the hero's green pass draws away from the ochre band by 6 svh as the hero
+   leaves; at rest it is in place. The load paint keeps its own animation (clip-path), this one is `translate`. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+    .storefront-theme section.storefront-hero .storefront-hero-media > div:not(.ky-film)::before {
+      animation:
+        ky-peint-droite var(--ky-t-passe) var(--ky-ease) 300ms both,
+        ky-accueil-ecart linear both;
+      animation-timeline: auto, --ky-heros;
+      animation-range: normal, exit 0% exit 100%;
+    }
+  }
+}

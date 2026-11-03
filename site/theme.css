@@ -1,0 +1,253 @@
+/*
+ * Site theme — CLIENT ZONE. Kurry Up, « La Fresque » (contract: site/ART_DIRECTION.md).
+ *
+ * Loaded AFTER app/globals.css. NAME BOTH SELECTORS, OR YOU REPAINT THE ADMIN AND NOT THE SHOP:
+ * every palette below is written for the pair
+ *
+ *     :root,
+ *     .storefront-theme { … }
+ *
+ *     .dark,
+ *     .dark .storefront-theme { … }
+ *
+ * `.storefront-theme` is a <div> (components/storefront/storefront-shell.tsx); a custom property declared
+ * on it beats the one it would inherit from `:root`. In dark mode `.storefront-theme` still matches, so
+ * EVERY token of the light block is declared again in the dark block, otherwise the dark shop keeps the
+ * light value. Sidebar tokens are not touched: the administration keeps the engine's sidebar.
+ *
+ * The direction in tokens (WCAG 2.1 ratios measured on the rounded HSL written here):
+ *
+ *   LIGHT « Badigeon » (default)
+ *   --background   badigeon  #FDF3DA  the wall, the brand's cream          charbon 10,78:1
+ *   --card         dalle     #FFF9EC  reading slabs                        charbon 11,34:1
+ *   --muted        chaux     #F6E6BF  heavier wash, fields' ground         charbon  9,63:1
+ *   --foreground   charbon   #373737  text (the brand's charcoal)
+ *   --muted-fg     gris      #5F5850  secondary text      6,34 fond · 6,67 dalle · 5,67 chaux
+ *   --primary      orange    #EA5800  the brand orange, INTACT: the main pass, the button fill
+ *                                     3,19:1 against the wall (control, ≥ 3)
+ *   --primary-fg   encre     #1F1712  the button label: dark ink on orange 5,01:1
+ *                                     WHITE ON #EA5800 IS 3,56:1 AND IS FORBIDDEN for a label.
+ *   --primary-hover orange vif #FF6A12  hover fill, ink label 6,12:1
+ *   --primary-ink  brique    #A94000  a WORD written in orange   5,52 fond · 5,81 dalle · 4,93 chaux · 4,90 accent
+ *   --accent       pêche     #FBE3C4  active chip, hover ground; label #7A2E00 7,56:1
+ *   --accent-solid vert      #233929  the green pass; cream on it 11,26:1; vs wall 11,26:1
+ *   --input        champ     #8F7C57  field boundary (WCAG 1.4.11) 3,66:1 against the wall
+ *   --ring         focus     #C24A00  4,45:1 against the wall
+ *   --border       filet     #E8D4A6  decorative separator only
+ *
+ *   DARK « Mur vert » (behind the engine's switch)
+ *   The wall is a green deeper than the brand's #233929, so that (1) the engine's own semantic inks,
+ *   which are left alone, clear 4,5:1 on every dark surface and on their /5 and /10 tints (#E98181
+ *   measured 3,90:1 on a #2D4634 muted), and (2) the brand green becomes a FIELD laid on that wall.
+ *   --background   #15241B  the wall                                       crème 14,62:1
+ *   --card         #1B2D21  reading slabs                                  crème 13,16:1
+ *   --muted        #203427  heavier wash                                   crème 12,02:1
+ *   --muted-fg     #CFC6AB  9,48 · 8,53 · 7,79
+ *   --primary      #EA5800  label #1F1712 5,01:1 ; 4,53:1 against the wall
+ *   --primary-ink  #FF9A5C  7,71 · 6,95 · 6,34 · 6,02 accent
+ *   --accent       #22382A  label #F5C99A 8,22:1
+ *   --accent-solid #EFA45E  ochre lifted for the dark wall: 7,80 · 7,02 · 6,41 ; ink on it 8,53:1
+ *   --input        #86A08D  5,71:1 ;  --ring #FF8A3D 6,89:1
+ *   destructive #E98181 6,09 · 5,49 · 5,01 ; info 6,73 · 6,06 · 5,53 (engine values, measured here)
+
+ * The semantic tokens (--success, --warning, --info, --destructive, --status-*) are the engine's and
+ * are left alone.
+ *
+ * Every rule of this site lives in the files imported below, each scoped to `.storefront-theme` (the
+ * admin is never repainted). The file owners are listed in site/ART_DIRECTION.md, « Répartition ».
+ * Only the art director adds an @import line here.
+ * DEV QUIRK: an edit of an imported file does NOT rebuild the dev CSS. After editing one, toggle the
+ * trailing newline at the end of THIS file and wait about 4 s.
+ */
+
+@import "./pages/shared.css";
+@import "./pages/chrome.css";
+@import "./pages/home.css";
+@import "./pages/menu.css";
+@import "./pages/creation.css";
+@import "./pages/inner.css";
+@import "./pages/restaurants.css";
+@import "./pages/franchise.css";
+
+:root,
+.storefront-theme {
+  --background: 43 89.7% 92.4%;
+  --foreground: 0 0% 21.6%;
+  --card: 41 100% 96.3%;
+  --card-foreground: 0 0% 21.6%;
+  --popover: 41 100% 96.3%;
+  --popover-foreground: 0 0% 21.6%;
+
+  --primary: 23 100% 45.9%;
+  --primary-foreground: 23 26.5% 9.6%;
+  --primary-ink: 23 100% 33.1%;
+  --primary-hover: 22 100% 53.5%;
+
+  --secondary: 43 75.3% 85.7%;
+  --secondary-foreground: 0 0% 21.6%;
+
+  --muted: 43 75.3% 85.7%;
+  --muted-foreground: 32 8.6% 34.3%;
+
+  --accent: 34 87.3% 87.6%;
+  --accent-foreground: 23 100% 23.9%;
+  --accent-solid: 136 23.9% 18%;
+  --accent-solid-foreground: 43 89.7% 92.4%;
+
+  --border: 42 58.9% 78%;
+  --input: 40 24.3% 45.1%;
+  --ring: 23 100% 38%;
+  --radius: 0.375rem;
+
+  --chart-1: 23 100% 45.9%;
+  --chart-2: 136 23.9% 18%;
+  --chart-3: 29 75% 57.6%;
+  --chart-4: 88 22.1% 61.8%;
+  --chart-5: 0 0% 21.6%;
+}
+
+.dark,
+.dark .storefront-theme {
+  --background: 144 26.3% 11.2%;
+  --foreground: 43 89.7% 92.4%;
+  --card: 140 25% 14.1%;
+  --card-foreground: 43 89.7% 92.4%;
+  --popover: 140 25% 14.1%;
+  --popover-foreground: 43 89.7% 92.4%;
+
+  --primary: 23 100% 45.9%;
+  --primary-foreground: 23 26.5% 9.6%;
+  --primary-ink: 23 100% 68%;
+  --primary-hover: 22 100% 53.5%;
+
+  --secondary: 141 23.8% 16.5%;
+  --secondary-foreground: 43 89.7% 92.4%;
+
+  --muted: 141 23.8% 16.5%;
+  --muted-foreground: 45 27.3% 74.1%;
+
+  --accent: 142 24.4% 17.6%;
+  --accent-foreground: 31 82% 78.2%;
+  --accent-solid: 29 81.9% 65.3%;
+  --accent-solid-foreground: 23 26.5% 9.6%;
+
+  --border: 146 21.2% 25.9%;
+  --input: 136 12% 57.6%;
+  --ring: 24 100% 62%;
+  --radius: 0.375rem;
+
+  --chart-1: 23 100% 45.9%;
+  --chart-2: 29 81.9% 65.3%;
+  --chart-3: 88 22.1% 61.8%;
+  --chart-4: 45 27.3% 74.1%;
+  --chart-5: 23 100% 68%;
+}
+
+/* The site's own tokens: storefront only (the admin never reads them). Read by site/pages/*.css. */
+.storefront-theme {
+  /* the brand's paints (fixed, they never flip) */
+  --ky-badigeon: #fdf3da;
+  --ky-badigeon-entete: #faf0d6;
+  --ky-dalle-claire: #fff9ec;
+  --ky-chaux: #f6e6bf;
+  --ky-peche: #fbe3c4;
+  --ky-orange: #ea5800;
+  --ky-orange-vif: #ff6a12;
+  --ky-brique: #a94000;
+  --ky-brique-sombre: #7a2e00;
+  --ky-vert: #233929;
+  --ky-vert-profond: #12201a;
+  --ky-vert-mur: #15241b;
+  --ky-ocre: #e49142;
+  --ky-ocre-clair: #efa45e;
+  --ky-sauge: #9fb388;
+  --ky-charbon: #373737;
+  --ky-gris: #5f5850;
+  --ky-encre: #1f1712;
+  --ky-encre-2: #3a2a1c;
+  --ky-creme-ombre: #cfc6ab;
+  --ky-orange-clair: #ff9a5c;
+  --ky-logo: #010000;
+  --ky-champ: #8f7c57;
+  --ky-filet: #e8d4a6;
+
+  /* role tokens: what a page rule reaches for (they flip in dark mode) */
+  --ky-sol: var(--ky-badigeon);
+  --ky-sol-entete: var(--ky-badigeon-entete);
+  --ky-dalle: var(--ky-dalle-claire);
+  --ky-sol-charge: var(--ky-chaux);
+  --ky-texte: var(--ky-charbon);
+  --ky-texte-2: var(--ky-gris);
+  --ky-mot: var(--ky-brique);
+  --ky-filet-deco: var(--ky-filet);
+  --ky-focus: #c24a00;
+  --ky-ombre: 0 22px 44px -26px rgb(90 50 10 / 0.32);
+  --ky-ombre-courte: 0 10px 22px -14px rgb(90 50 10 / 0.28);
+  --ky-vert-champ: var(--ky-vert);
+
+  /* shapes */
+  --ky-r-dalle: 14px;
+  --ky-r-photo: 10px;
+  --ky-r-ctrl: 6px;
+  --ky-wrap: min(1240px, 100% - 2rem);
+  --ky-marge-passe: clamp(0.75rem, 2vw, 1.5rem);
+  --ky-entete-h: 68px;
+
+  /* image caps: nothing ever fills a phone or a tablet (site/ART_DIRECTION.md § 8) */
+  --ky-cap-hero: min(42svh, 300px);
+  --ky-cap-scene: min(40svh, 360px);
+  --ky-cap-plat: min(30svh, 240px);
+
+  /* motion */
+  --ky-ease: cubic-bezier(0.22, 0.8, 0.16, 1);
+  --ky-ease-couche: cubic-bezier(0.4, 0, 0.2, 1);
+  --ky-t-passe: 500ms;
+  --ky-t-jet: 520ms;
+  --ky-jet-pas: 70ms;
+  --ky-t-couche: 160ms;
+  --ky-t-menu: 380ms;
+  --ky-recouvrement: 6svh;
+
+  /* type */
+  --ky-font-titre: var(--font-poppins), "Arial Black", Impact, sans-serif;
+  --ky-font-texte: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+@media (min-width: 768px) {
+  .storefront-theme {
+    --ky-cap-hero: min(48svh, 440px);
+    --ky-cap-scene: min(52svh, 520px);
+    --ky-cap-plat: min(32svh, 280px);
+    --ky-wrap: min(1240px, 100% - 3rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .storefront-theme {
+    --ky-cap-hero: min(64svh, 600px);
+    --ky-cap-scene: min(70svh, 640px);
+    --ky-cap-plat: 300px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-theme {
+    --ky-entete-h: 84px;
+  }
+}
+
+.dark .storefront-theme {
+  --ky-sol: var(--ky-vert-mur);
+  --ky-sol-entete: var(--ky-vert-mur);
+  --ky-dalle: #1b2d21;
+  --ky-sol-charge: #203427;
+  --ky-texte: var(--ky-badigeon);
+  --ky-texte-2: var(--ky-creme-ombre);
+  --ky-mot: var(--ky-orange-clair);
+  --ky-filet-deco: #345040;
+  --ky-focus: #ff8a3d;
+  --ky-ombre: 0 22px 44px -26px rgb(0 0 0 / 0.6);
+  --ky-ombre-courte: 0 10px 22px -14px rgb(0 0 0 / 0.55);
+  --ky-vert-champ: #2d4634;
+}
+

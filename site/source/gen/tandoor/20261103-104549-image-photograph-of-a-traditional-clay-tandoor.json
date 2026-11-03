@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:45:49.178Z",
+  "modality": "image",
+  "prompt": "Photograph of a traditional clay tandoor oven in an open kitchen of a bright modern Indian street food restaurant, eye-level close view. The round terracotta tandoor with a glowing ember mouth and a steel rim; a cook's forearms and hands only (no face, no head visible, wearing a plain forest-green apron sleeve and cream cloth) pressing a round naan dough onto the inner wall of the oven; on the steel counter beside it, long metal skewers of marinated orange-red chicken tikka pieces with charred edges, a stack of fresh blistered naans, small bowls of coriander and lemon wedges. Cream lime-wash plaster wall behind with a flat painted band of ochre and sage green. Warm bright daylight mixed with the orange glow of the embers, airy, not dark, no heavy shadows. Absolutely no text, no letters, no numbers, no logos, no brand marks, no faces. Original, realistic food photography, sharp, appetising natural colours.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "Photograph of a traditional clay tandoor oven in an open kitchen of a bright modern Indian street food restaurant, eye-level close view. The round terracotta tandoor with a glowing ember mouth and a steel rim; a cook's forearms and hands only (no face, no head visible, wearing a plain forest-green apron sleeve and cream cloth) pressing a round naan dough onto the inner wall of the oven; on the steel counter beside it, long metal skewers of marinated orange-red chicken tikka pieces with charred edges, a stack of fresh blistered naans, small bowls of coriander and lemon wedges. Cream lime-wash plaster wall behind with a flat painted band of ochre and sage green. Warm bright daylight mixed with the orange glow of the embers, airy, not dark, no heavy shadows. Absolutely no text, no letters, no numbers, no logos, no brand marks, no faces. Original, realistic food photography, sharp, appetising natural colours.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "2048x1152",
+    "count": 1,
+    "referenceImages": 0
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/tandoor/20261103-104549-image-photograph-of-a-traditional-clay-tandoor.png",
+      "mediaType": "image/png",
+      "bytes": 4171327
+    }
+  ]
+}

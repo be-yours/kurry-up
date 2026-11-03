@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-11-03T09:44:16.376Z",
+  "modality": "image",
+  "prompt": "Premium editorial food photograph of one signature Indian street food meal, cut-out ready: the whole meal sits alone and centred on a perfectly flat, seamless, uniform very light warm grey-white background (#F2EEE6), with generous empty margin on every side (the meal fills about 65 percent of the width), and NO cast shadow, NO reflection, no table edge, no props touching the frame. Shot from a three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left. The meal: a wide matte deep forest-green ceramic bowl filled with glossy creamy orange butter chicken, tandoor-charred chicken pieces, a swirl of cream, a few fresh coriander leaves; on the right of the same bowl a rounded mound of fluffy white basmati rice with a few saffron-yellow grains; in front of the bowl, a folded blistered naan with charred spots, resting directly on a small brushed-steel round tray; a few whole green cardamom pods, cloves and a cinnamon stick scattered near the tray. Realistic, appetising, real colours, shallow depth of field kept sharp on the food. Absolutely no text, no letters, no logo, no printed packaging, no hands, no people. Original, not a copy of any brand's photo.",
+  "model": {
+    "id": "openai/gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "openai"
+  },
+  "request": {
+    "modality": "image",
+    "prompt": "Premium editorial food photograph of one signature Indian street food meal, cut-out ready: the whole meal sits alone and centred on a perfectly flat, seamless, uniform very light warm grey-white background (#F2EEE6), with generous empty margin on every side (the meal fills about 65 percent of the width), and NO cast shadow, NO reflection, no table edge, no props touching the frame. Shot from a three-quarter elevated angle (about 40 degrees), soft warm daylight from the upper left. The meal: a wide matte deep forest-green ceramic bowl filled with glossy creamy orange butter chicken, tandoor-charred chicken pieces, a swirl of cream, a few fresh coriander leaves; on the right of the same bowl a rounded mound of fluffy white basmati rice with a few saffron-yellow grains; in front of the bowl, a folded blistered naan with charred spots, resting directly on a small brushed-steel round tray; a few whole green cardamom pods, cloves and a cinnamon stick scattered near the tray. Realistic, appetising, real colours, shallow depth of field kept sharp on the food. Absolutely no text, no letters, no logo, no printed packaging, no hands, no people. Original, not a copy of any brand's photo.",
+    "model": "openai/gpt-image-2",
+    "mode": "balanced",
+    "size": "1536x1024",
+    "count": 1,
+    "referenceImages": 0
+  },
+  "estimate": {
+    "amount": null,
+    "currency": "USD",
+    "basis": "Image pricing is token-based or unpublished for this model",
+    "assumed": false
+  },
+  "warnings": [],
+  "files": [
+    {
+      "path": "/Users/admin/Desktop/Dev/beyours-clients/kurry-up/site/source/gen/hero/20261103-104416-image-premium-editorial-food-photograph-of-one.png",
+      "mediaType": "image/png",
+      "bytes": 1898131
+    }
+  ]
+}
