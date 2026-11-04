@@ -7,12 +7,8 @@
  */
 
 export const SEL = {
-  /** The bar's flex row: the « Commander » button is portalled at its end (after the account, in tab order). */
-  nav: '.storefront-theme > header .storefront-nav',
   /** The phone menu, mounted by AnimatePresence while open (framer keeps it 300 ms after the close). */
   overlay: '.storefront-theme > div.fixed.inset-0.bg-primary',
-  /** The phone menu's top row (logo, cross): it repeats the bar, so the « Commander » plaque is portalled there. */
-  overlayTop: '.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child',
   /** The burger of the compact bar (the engine names it « Ouvrir le menu » / « Fermer le menu »). */
   burger: '.storefront-theme > header .storefront-nav > div.lg\\:hidden > button:last-child',
   /** The footer's centred column: the painted promise is portalled into it (placed first by chrome.css). */

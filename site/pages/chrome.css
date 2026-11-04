@@ -1,6 +1,6 @@
 /*
  * chrome.css — CLIENT ZONE. Kurry Up, « La Fresque ». Owner: agent « chrome » (site/ART_DIRECTION.md § 2 and § 10).
- * Scope: the header (« La façade »: the sign, the awning, the plaque), the phone menu (« le store » that unrolls over
+ * Scope: the header (« La façade »: the sign, the awning), the phone menu (« le store » that unrolls over
  * the swatches), the « closed » banner, the footer (the green field), the cart sheet and the dialogs (portals).
  *
  * Every selector starts at `.storefront-theme`, except the named exceptions: `html[data-ky-menu]:has(.storefront-theme)`
@@ -13,8 +13,8 @@
  *
  * Engine markup (components/storefront/storefront-header.tsx, storefront-footer.tsx, cart-sheet.tsx):
  *   header.fixed > div.storefront-nav > a.storefront-nav-brand, nav.storefront-nav-links, div.storefront-nav-actions,
- *                                       div.lg:hidden (cart, burger), a.ky-entete-commande (portalled)
- *   div.fixed.inset-0.bg-primary.lg:hidden (phone menu) > div (logo, cross, a.ky-menu-commande portalled),
+ *                                       div.lg:hidden (cart, burger)
+ *   div.fixed.inset-0.bg-primary.lg:hidden (phone menu) > div (logo, cross),
  *                                                          nav > div > a, div (account, theme)
  *   div.fixed.top-0.h-10.z-50 (store closed banner)
  *   footer.storefront-footer > div.max-w-7xl > div.ky-pied-promesse (portalled), div.storefront-footer-cols,
@@ -26,10 +26,10 @@
  */
 
 /* ═════════════════════════════ 1. Header « La façade » ═════════════════════════════
-   The bar is the wall. On it, three painted surfaces in a row, as on the shop front of rue de Washington:
+   The bar is the wall. On it, two painted surfaces in a row, as on the shop front of rue de Washington:
      the sign (sage, the logo in ink)  ·  the awning (green, cream lettering with its painted shadow, the rooms and
-     the icons)  ·  the plaque (« Commander », the brand orange, ink lettering).
-   The sign and the plaque overlap the two ends of the awning. One grid row; the awning is the row's own ::before
+     the icons), which runs to the end of the row. The bar has no « Commander » button (dropped by the user).
+   The sign overlaps the awning's left end. One grid row; the awning is the row's own ::before
    (a pseudo-element of a grid container is a grid item), spanning the middle columns. Same height in both states. */
 
 .storefront-theme {
@@ -41,8 +41,7 @@
   --ky-mot-h: clamp(20px, 6.2vw, 26px);
   --ky-enseigne-h: 50px;
   --ky-auvent-h: 44px;
-  --ky-plaque-h: 50px;
-  --ky-rentre: 12px; /* how far the sign and the plaque overlap the awning */
+  --ky-rentre: 12px; /* how far the sign overlaps the awning */
 }
 
 @media (min-width: 768px) {
@@ -50,7 +49,6 @@
     --ky-mot-h: 28px;
     --ky-enseigne-h: 54px;
     --ky-auvent-h: 46px;
-    --ky-plaque-h: 54px;
     --ky-rentre: 16px;
   }
 }
@@ -60,7 +58,6 @@
     --ky-mot-h: 34px;
     --ky-enseigne-h: 66px;
     --ky-auvent-h: 54px;
-    --ky-plaque-h: 62px;
     --ky-rentre: 20px;
   }
 }
@@ -103,26 +100,14 @@
   position: relative;
   z-index: 0;
   grid-row: 1;
-  grid-column: 2 / 4;
+  grid-column: 2 / 5;
   align-self: center;
   height: var(--ky-auvent-h);
-  margin-inline: calc(var(--ky-rentre) * -1);
-  /* the brush is drawn 12 % wider than the awning, from its left end: the dry streaks of its right end fall
-     outside the box, and the clean cut that is left runs under the plaque */
-  margin-right: calc(var(--ky-rentre) * -1 - 24px);
+  margin-inline: calc(var(--ky-rentre) * -1) 0;
   background: linear-gradient(to bottom, var(--ky-auvent) calc(100% - 8px), var(--ky-auvent-levre) calc(100% - 8px));
-  -webkit-mask: var(--ky-brosse) left center / 112% 100% no-repeat;
-  mask: var(--ky-brosse) left center / 112% 100% no-repeat;
+  -webkit-mask: var(--ky-brosse) left center / 100% 100% no-repeat;
+  mask: var(--ky-brosse) left center / 100% 100% no-repeat;
   pointer-events: none;
-}
-
-/* no plaque (cart, checkout and order pages): the awning runs to the end of the row */
-.storefront-theme > header .storefront-nav:not(:has(> .ky-entete-commande))::before,
-.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child:not(:has(> .ky-menu-commande))::before {
-  grid-column: 2 / 5;
-  margin-right: 0;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
 }
 
 /* ── The sign: a sage board laid with the short brush, the brand's word in ink on it (7,80:1 is the paint's
@@ -206,33 +191,6 @@
   outline-offset: 2px;
 }
 
-/* ── The plaque: « Commander » (portalled by ChromeEffects), the brand orange, ink lettering with the painted
-      light edge of the shop's plaque. Always shown, at every width. ── */
-.storefront-theme :is(header .ky-entete-commande, div.fixed.inset-0.bg-primary .ky-menu-commande) {
-  position: relative;
-  z-index: 2;
-  grid-column: 4;
-  display: inline-flex;
-  min-height: var(--ky-plaque-h);
-  padding: 0 clamp(14px, 1.6vw, 30px);
-  font-size: 0.8125rem;
-  letter-spacing: 0.06em;
-  text-shadow: 0.07em 0.07em 0 rgb(255 196 150 / 0.75);
-}
-
-@media (min-width: 768px) {
-  .storefront-theme :is(header .ky-entete-commande, div.fixed.inset-0.bg-primary .ky-menu-commande) {
-    font-size: 0.9375rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .storefront-theme > header .ky-entete-commande {
-    font-size: 1rem;
-    letter-spacing: 0.07em;
-  }
-}
-
 /* ── On the awning: the icons and every word are cream, the focus ring the light orange (6,2:1 on the green) ── */
 .storefront-theme > header .storefront-nav :is(.storefront-nav-links, .storefront-nav-actions, div.lg\:hidden),
 .storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button {
@@ -301,7 +259,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Phone, tablet and the compact bar up to 1279 px: sign · awning (basket, burger) · plaque ── */
+/* ── Phone, tablet and the compact bar up to 1279 px: sign · awning (basket, burger) ── */
 .storefront-theme > header .storefront-nav > div.lg\:hidden {
   grid-column: 3;
   display: flex;
@@ -321,15 +279,9 @@
     --ky-mot-h: 19px;
     --ky-rentre: 9px;
   }
-
-  .storefront-theme :is(header .ky-entete-commande, div.fixed.inset-0.bg-primary .ky-menu-commande) {
-    padding-inline: 11px;
-    font-size: 0.75rem;
-    letter-spacing: 0.03em;
-  }
 }
 
-/* ── From 1280 px: the rooms are lettered on the awning, after the sign; the icons close it, before the plaque.
+/* ── From 1280 px: the rooms are lettered on the awning, after the sign; the icons close it.
       Shown by address (home, blog, booking and any other link stay in the footer and the phone menu). ── */
 @media (min-width: 1280px) {
   .storefront-theme > header .storefront-nav > div.lg\:hidden {
@@ -466,7 +418,7 @@
 }
 
 /* ═════════════════════════════ 2. The phone menu « le store » ═════════════════════════════
-   The top row is the bar itself (sign · awning with the cross · plaque), so opening the menu changes only the
+   The top row is the bar itself (sign · awning with the cross), so opening the menu changes only the
    burger into a cross: the awning then unrolls down the screen (clip-path from the top) and uncovers the wall,
    where each room is a test swatch of the mural's paints, a brush stroke laid left then right, one after the
    other. A swatch is a light wash of its paint; the room you are in, and the one under the finger or the focus,
@@ -521,14 +473,8 @@
 }
 
 .storefront-theme > div.fixed.inset-0.bg-primary > div:first-child > button {
-  grid-column: 3;
-  justify-self: end;
-  margin-right: calc(var(--ky-rentre) + 2px);
-}
-
-/* without the plaque (cart, checkout and order pages have none in the bar either) */
-.storefront-theme > div.fixed.inset-0.bg-primary > div:first-child:not(:has(> .ky-menu-commande)) > button {
   grid-column: 4;
+  justify-self: end;
   margin-right: 6px;
 }
 
