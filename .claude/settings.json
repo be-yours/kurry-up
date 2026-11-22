@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"MANDATORY FIRST ACTION, every turn: before any other tool call, invoke the skill named caveman with the Skill tool, then apply its rules to every response in this turn.\"}}'"
+          }
+        ]
+      }
+    ]
+  }
+}
